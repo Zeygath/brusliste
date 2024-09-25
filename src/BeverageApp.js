@@ -8,8 +8,8 @@ import * as AlertDialog from '@radix-ui/react-alert-dialog';
 const BeverageApp = () => {
   const [people, setPeople] = useState([
     { name: 'Asbjørn', beverages: 0 },
-    { name: 'Kjartan', beverages: 2 },
-    { name: 'Svein', beverages: 1 },
+    { name: 'Kjartan', beverages: 0 },
+    { name: 'Svein', beverages: 0 },
   ]);
   const [newPersonName, setNewPersonName] = useState('');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
