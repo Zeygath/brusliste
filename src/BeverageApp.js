@@ -121,7 +121,7 @@ const BeverageApp = () => {
               Betaling for {payingPerson?.name}
             </AlertDialog.Title>
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: ${payingPerson?.beverages * 10} NOK</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * 10} NOK</p>
               <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
                 <span className="text-gray-500"><img src='https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=66f5ea62&is=66f498e2&hm=e12dc0860df173d5adbdca599b49af431611d9c823cb6c90838f01709429678a&'/></span>
               </div>
