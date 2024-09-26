@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, UserPlus, UserMinus, ShoppingCart, Coffee } from 'lucide-react';
-import { Button } from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { Input } from './components/ui/input';
+import { Button } from './components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/Card';
+import { Input } from './components/ui/Input';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const BeverageApp = () => {
-  const [people, setPeople] = useState([
-    { name: 'Asbjørn', beverages: 0 },
-    { name: 'Kjartan', beverages: 0 },
-    { name: 'Svein', beverages: 0 },
-  ]);
+  const [people, setPeople] = useState(() => {
+    // Load data from local storage on initial render
+    const savedPeople = localStorage.getItem('beverageTrackerPeople');
+    return savedPeople ? JSON.parse(savedPeople) : [
+      { name: 'Alice', beverages: 0 },
+      { name: 'Bob', beverages: 2 },
+      { name: 'Charlie', beverages: 1 },
+    ];
+  });
   const [newPersonName, setNewPersonName] = useState('');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [payingPerson, setPayingPerson] = useState(null);
+
+  // Save data to local storage whenever people state changes
+  useEffect(() => {
+    localStorage.setItem('beverageTrackerPeople', JSON.stringify(people));
+  }, [people]);
 
   const addBeverage = (index) => {
     const newPeople = [...people];
@@ -112,7 +121,7 @@ const BeverageApp = () => {
               Betaling for {payingPerson?.name}
             </AlertDialog.Title>
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * 10},-</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: ${payingPerson?.beverages * 10} NOK</p>
               <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
                 <span className="text-gray-500"><img src='https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=66f5ea62&is=66f498e2&hm=e12dc0860df173d5adbdca599b49af431611d9c823cb6c90838f01709429678a&'/></span>
               </div>
@@ -137,3 +146,5 @@ const BeverageApp = () => {
 };
 
 export default BeverageApp;
+
+
