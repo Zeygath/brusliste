@@ -80,52 +80,50 @@ const BeverageApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-center mb-6">
+    <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
+      <div className="flex-grow flex flex-col">
+        <div className="flex items-center justify-center mb-4">
           <Coffee className="h-10 w-10 text-green-500 mr-2" />
           <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+        <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 auto-rows-fr">
           {people.map((person, index) => (
-            <Card key={index} className="border-l-4 border-green-500 transition-all duration-300 hover:shadow-md">
-              <CardHeader>
+            <Card key={index} className="bg-white border-l-4 border-green-500 transition-all duration-300 hover:shadow-md flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-gray-700 truncate">{person.name}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-semibold text-green-600">{person.beverages} 
-                    <span className="text-sm text-gray-500 ml-1">brus registrert</span>
-                  </span>
-                  <div className="flex items-center">
-                    <Button variant="outline" size="icon" onClick={() => updateBeverage(index, -1)} className="mr-2 text-red-500 border-red-500 hover:bg-red-100">
-                      <MinusCircle className="h-5 w-5" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => updateBeverage(index, 1)} className="mr-2 text-green-500 border-green-500 hover:bg-green-100">
-                      <PlusCircle className="h-5 w-5" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => openPaymentDialog(index)} className="text-blue-500 border-blue-500 hover:bg-blue-100">
-                      <ShoppingCart className="h-5 w-5" />
-                    </Button>
-                  </div>
+              <CardContent className="flex-grow flex flex-col justify-between">
+                <span className="text-2xl font-semibold text-green-600">{person.beverages} 
+                  <span className="text-sm text-gray-500 ml-1">antall brus</span>
+                </span>
+                <div className="flex items-center justify-between mt-2">
+                  <Button variant="outline" size="sm" onClick={() => updateBeverage(index, -1)} className="text-red-500 border-red-500 hover:bg-red-100">
+                    <MinusCircle className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => updateBeverage(index, 1)} className="text-green-500 border-green-500 hover:bg-green-100">
+                    <PlusCircle className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => openPaymentDialog(index)} className="text-blue-500 border-blue-500 hover:bg-blue-100">
+                    <ShoppingCart className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white p-4 rounded-lg shadow mt-4">
           <div className="flex items-center">
             <Input
               type="text"
-              placeholder="Navn på ny person"
+              placeholder="Ny persons navn"
               value={newPersonName}
               onChange={(e) => setNewPersonName(e.target.value)}
               className="mr-2 flex-grow"
             />
             <Button onClick={addPerson} className="bg-green-500 hover:bg-green-600 text-white">
-              <UserPlus className="h-5 w-5 mr-2" /> Legg til person
+              <UserPlus className="h-5 w-5 mr-2" /> Legg Til Person
             </Button>
           </div>
         </div>
@@ -136,12 +134,12 @@ const BeverageApp = () => {
           <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
           <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
             <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
-              Betaling for {payingPerson?.name}
+              betaling for {payingPerson?.name}
             </AlertDialog.Title>
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-green-600 mb-4">A betale: {payingPerson?.beverages * 10} NOK</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">å betale: {payingPerson?.beverages * 10} NOK</p>
               <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
-                <span className="text-gray-500">https://i.imgur.com/kCr1BON.jpeg</span>
+                <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'></img></span>
               </div>
             </AlertDialog.Description>
             <div className="flex justify-end gap-[15px]">
