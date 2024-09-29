@@ -87,25 +87,25 @@ const BeverageApp = () => {
           <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
         </div>
         
-        <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 auto-rows-fr">
+        <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 auto-rows-fr">
           {people.map((person, index) => (
-            <Card key={index} className="bg-white border-l-4 border-green-500 transition-all duration-300 hover:shadow-md flex flex-col">
+            <Card key={index} className="bg-white border-l-4 border-green-500 transition-all duration-300 hover:shadow-md flex flex-col p-4">
               <CardHeader className="flex-shrink-0">
-                <CardTitle className="text-lg text-gray-700 truncate">{person.name}</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl md:text-3xl text-gray-700 truncate">{person.name}</CardTitle>
               </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-between">
-                <span className="text-2xl font-semibold text-green-600">{person.beverages} 
+              <CardContent className="text-3xl sm:text-4xl md:text-5xl font-semibold text-green-600">
+                <span className="text-base sm:text-lg md:text-xl text-gray-500 ml-2">{person.beverages} 
                   <span className="text-sm text-gray-500 ml-1">antall brus</span>
                 </span>
-                <div className="flex items-center justify-between mt-2">
-                  <Button variant="outline" size="sm" onClick={() => updateBeverage(index, -1)} className="text-red-500 border-red-500 hover:bg-red-100">
-                    <MinusCircle className="h-4 w-4" />
+                <div className="flex items-center justify-between mt-4">
+                  <Button variant="outline" className="flex-grow mr-2 text-red-500 border-red-500 hover:bg-red-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => updateBeverage(index, -1)}>
+                    <MinusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => updateBeverage(index, 1)} className="text-green-500 border-green-500 hover:bg-green-100">
-                    <PlusCircle className="h-4 w-4" />
+                  <Button variant="outline" className="flex-grow mr-2 text-green-500 border-green-500 hover:bg-green-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => updateBeverage(index, 1)}>
+                    <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => openPaymentDialog(index)} className="text-blue-500 border-blue-500 hover:bg-blue-100">
-                    <ShoppingCart className="h-4 w-4" />
+                  <Button variant="outline" className="flex-grow text-blue-500 border-blue-500 hover:bg-blue-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openPaymentDialog(index)}>
+                    <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
                   </Button>
                 </div>
               </CardContent>
@@ -115,17 +115,16 @@ const BeverageApp = () => {
 
         <div className="bg-white p-4 rounded-lg shadow mt-4">
           <div className="flex items-center">
-            <Input
-              type="text"
-              placeholder="Ny persons navn"
-              value={newPersonName}
-              onChange={(e) => setNewPersonName(e.target.value)}
-              className="mr-2 flex-grow"
-            />
-            <Button onClick={addPerson} className="bg-green-500 hover:bg-green-600 text-white">
-              <UserPlus className="h-5 w-5 mr-2" /> Legg Til Person
-            </Button>
-          </div>
+          <Input
+            type="text"
+            placeholder="Navn på ny person"
+            value={newPersonName}
+            onChange={(e) => setNewPersonName(e.target.value)}
+            className="mr-2 flex-grow text-lg"
+          />
+          <Button onClick={addPerson} className="bg-purple-500 hover:bg-purple-600 text-white text-lg py-2 px-4">
+            <UserPlus className="h-6 w-6 mr-2" /> Legg til person
+          </Button>
         </div>
       </div>
 
