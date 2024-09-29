@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus } from 'lucide-react';
-import { Button } from './components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/Card';
-import { Input } from './components/ui/Input';
+import { Button } from './components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Input } from './components/ui/input';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = 'https://brusliste-backend.vercel.app/api';
