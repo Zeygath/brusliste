@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
-const API_URL = 'https://brusliste-backend.vercel.app:3001/api';
+const API_URL = 'https://brusliste-backend.vercel.app/api';
 
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
