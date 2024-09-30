@@ -87,11 +87,11 @@ const BeverageApp = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4 sm:p-6 md:p-8 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
       <div className="flex-grow flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <Coffee className="h-10 w-10 text-purple-500 mr-2" />
+            <Coffee className="h-10 w-10 text-green-500 mr-2" />
             <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
           </div>
           <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
@@ -101,12 +101,12 @@ const BeverageApp = () => {
         
         <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 auto-rows-fr">
           {people.map((person) => (
-            <Card key={person.id} className="bg-white border-l-4 border-purple-500 transition-all duration-300 hover:shadow-md flex flex-col p-4">
+            <Card key={person.id} className="bg-white border-l-4 border-green-500 transition-all duration-300 hover:shadow-md flex flex-col p-4">
               <CardHeader className="flex-shrink-0 p-0">
                 <CardTitle className="text-xl sm:text-2xl md:text-3xl text-gray-700 truncate">{person.name}</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col justify-between p-0 mt-4">
-                <span className="text-3xl sm:text-4xl md:text-5xl font-semibold text-purple-600">
+                <span className="text-3xl sm:text-4xl md:text-5xl font-semibold text-green-600">
                   {person.beverages}
                   <span className="text-base sm:text-lg md:text-xl text-gray-500 ml-2">brus registrert</span>
                 </span>
@@ -135,7 +135,7 @@ const BeverageApp = () => {
               onChange={(e) => setNewPersonName(e.target.value)}
               className="mr-2 flex-grow text-lg"
             />
-            <Button onClick={addPerson} className="bg-purple-500 hover:bg-purple-600 text-white text-lg py-2 px-4">
+            <Button onClick={addPerson} className="bg-green-500 hover:bg-green-600 text-white text-lg py-2 px-4">
               <UserPlus className="h-6 w-6 mr-2" /> Legg til person
             </Button>
           </div>
@@ -146,11 +146,11 @@ const BeverageApp = () => {
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
           <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-            <AlertDialog.Title className="text-purple-700 m-0 text-[20px] font-semibold">
+            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
               Betaling for {payingPerson?.name}
             </AlertDialog.Title>
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-purple-600 mb-4">Å betale: {payingPerson?.beverages * 10} NOK</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * 10} NOK</p>
               <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
                 <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'/></span>
               </div>
@@ -162,7 +162,7 @@ const BeverageApp = () => {
                 </button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>
-                <button className="text-white bg-purple-500 hover:bg-purple-600 focus:shadow-purple-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={resetAfterPayment}>
+                <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={resetAfterPayment}>
                   Done
                 </button>
               </AlertDialog.Action>
@@ -175,7 +175,7 @@ const BeverageApp = () => {
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
           <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none overflow-y-auto">
-            <AlertDialog.Title className="text-purple-700 m-0 text-[20px] font-semibold flex justify-between items-center">
+            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold flex justify-between items-center">
               <span>Transaction History</span>
               <Button onClick={() => setShowTransactions(false)} variant="ghost" size="sm">
                 <X className="h-4 w-4" />
