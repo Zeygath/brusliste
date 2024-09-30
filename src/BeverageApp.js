@@ -7,6 +7,7 @@ import { Input } from './components/ui/input';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = 'https://brusliste-backend.vercel.app/api';
+const PRICE_PER_BEVERAGE = 10;
 
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
@@ -88,7 +89,7 @@ const BeverageApp = () => {
 
   const formatAmount = (amount) => {
     const numAmount = Number(amount);
-    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(10);
+    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
   };
   
   return (
@@ -155,7 +156,7 @@ const BeverageApp = () => {
               Betaling for {payingPerson?.name}
             </AlertDialog.Title>
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * 10} NOK</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * PRICE_PER_BEVERAGE} NOK</p>
               <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
                 <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'/></span>
               </div>
@@ -192,8 +193,8 @@ const BeverageApp = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dato</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Navn</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drikker</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Antall</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">kost</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   </tr>
                 </thead>
