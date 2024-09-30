@@ -8,6 +8,11 @@ import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = 'https://brusliste-backend.vercel.app/api';
 
+const api = axios.create({
+	baseURL: API_URL,
+	withCredentials: true
+});
+
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
   const [newPersonName, setNewPersonName] = useState('');
@@ -20,7 +25,7 @@ const BeverageApp = () => {
 
   const fetchPeople = async () => {
     try {
-      const response = await axios.get(`${API_URL}/people`);
+      const response = await api.get('/people');
       setPeople(response.data);
     } catch (error) {
       console.error('Error fetching people:', error);
@@ -31,7 +36,7 @@ const BeverageApp = () => {
     const person = people[index];
     const newBeverageCount = Math.max(0, person.beverages + increment);
     try {
-      const response = await axios.post(`${API_URL}/people`, {
+      const response = await api.post('people', {
         name: person.name,
         beverages: newBeverageCount
       });
@@ -53,7 +58,7 @@ const BeverageApp = () => {
 
   const resetAfterPayment = async () => {
     try {
-      const response = await axios.post(`${API_URL}/people`, {
+      const response = await api.post('/people', {
         name: payingPerson.name,
         beverages: 0
       });
@@ -67,7 +72,7 @@ const BeverageApp = () => {
   const addPerson = async () => {
     if (newPersonName.trim() !== '') {
       try {
-        const response = await axios.post(`${API_URL}/people`, {
+        const response = await api.post('/people', {
           name: newPersonName,
           beverages: 0
         });
