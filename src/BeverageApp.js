@@ -86,6 +86,11 @@ const BeverageApp = () => {
     }
   };
 
+  const formatAmount = (amount) => {
+    const numAmount = Number(amount);
+    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
+  };
+  
   return (
     <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
       <div className="flex-grow flex flex-col">
@@ -198,7 +203,7 @@ const BeverageApp = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(transaction.date).toLocaleString()}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{transaction.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.beverages}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.amount.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatAmount(transaction.amount)} NOK</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{transaction.type}</td>
                     </tr>
                   ))}
