@@ -88,7 +88,7 @@ const BeverageApp = () => {
 
   const formatAmount = (amount) => {
     const numAmount = Number(amount);
-    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
+    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(10);
   };
   
   return (
