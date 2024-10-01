@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, X } from 'lucide-react';
+import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, X, Zap } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
@@ -16,6 +16,7 @@ const BeverageApp = () => {
   const [payingPerson, setPayingPerson] = useState(null);
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [showQuickBuyDialog, setQuickBuyDialog] = useState(false)
 
   useEffect(() => {
     fetchPeople();
@@ -91,6 +92,19 @@ const BeverageApp = () => {
     const numAmount = Number(amount);
     return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
   };
+
+  const quickBuy = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/quickbuy`);
+      // Optionally update any relevant state here
+      setShowQuickBuyDialog(false);
+      alert('Quick buy successful!');
+      // You might want to refresh the transaction list or update some stats here
+    } catch (error) {
+      console.error('Error processing quick buy:', error);
+      alert('Error processing quick buy. Please try again.');
+    }
+  };
   
   return (
     <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
@@ -100,9 +114,14 @@ const BeverageApp = () => {
             <Coffee className="h-10 w-10 text-green-500 mr-2" />
             <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
           </div>
-          <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
-            <ClipboardList className="h-5 w-5 mr-2" /> Se Transaksjoner
-          </Button>
+          <div className="flex space-x-2">
+            <Button onClick={() => setShowQuickBuyDialog(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                <Zap className="h-5 w-5 mr-2" /> Hurtigkjøp
+              </Button>
+            <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
+              <ClipboardList className="h-5 w-5 mr-2" /> Se Transaksjoner
+            </Button>
+          </div>
         </div>
         
         <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 auto-rows-fr">
@@ -176,6 +195,36 @@ const BeverageApp = () => {
           </AlertDialog.Content>
         </AlertDialog.Portal>
       </AlertDialog.Root>
+
+      <AlertDialog.Root open={showQuickBuyDialog} onOpenChange={setShowQuickBuyDialog}>
+          <AlertDialog.Portal>
+            <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
+            <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+              <AlertDialog.Title className="text-purple-700 m-0 text-[20px] font-semibold">
+                Hurtigkjøp
+              </AlertDialog.Title>
+              <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
+                <p>Er du sikker på at du vil gjøre et hurtigkjøp?</p>
+                <p className="font-bold mt-2">Pris: 10 NOK</p>
+                <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
+                  <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'/></span>
+                </div>
+              </AlertDialog.Description>
+              <div className="flex justify-end gap-[15px]">
+                <AlertDialog.Cancel asChild>
+                  <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]">
+                    Avbryt
+                  </button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <button className="text-white bg-yellow-500 hover:bg-yellow-600 focus:shadow-yellow-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={quickBuy}>
+                    Bekreft kjøp
+                  </button>
+                </AlertDialog.Action>
+              </div>
+            </AlertDialog.Content>
+          </AlertDialog.Portal>
+        </AlertDialog.Root>
 
       <AlertDialog.Root open={showTransactions} onOpenChange={setShowTransactions}>
         <AlertDialog.Portal>
