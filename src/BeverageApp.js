@@ -16,7 +16,7 @@ const BeverageApp = () => {
   const [payingPerson, setPayingPerson] = useState(null);
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
-  const [showQuickBuyDialog, setQuickBuyDialog] = useState(false)
+  const [showQuickBuyDialog, setShowQuickBuyDialog] = useState(false)
 
   useEffect(() => {
     fetchPeople();
