@@ -200,11 +200,11 @@ const BeverageApp = () => {
           <AlertDialog.Portal>
             <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
             <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-              <AlertDialog.Title className="text-purple-700 m-0 text-[20px] font-semibold">
+              <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
                 Hurtigkjøp
               </AlertDialog.Title>
               <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-                <p>Er du sikker på at du vil gjøre et hurtigkjøp?</p>
+                
                 <p className="font-bold mt-2">Pris: 10 NOK</p>
                 <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
                   <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'/></span>
