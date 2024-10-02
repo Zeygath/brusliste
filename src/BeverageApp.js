@@ -9,6 +9,7 @@ import * as AlertDialog from '@radix-ui/react-alert-dialog';
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
 const API_KEY = process.env.REACT_APP_API_KEY;
 const PRICE_PER_BEVERAGE = 10;
+console.log(API_KEY);
 
 const api = axios.create({
   baseURL: API_URL,
