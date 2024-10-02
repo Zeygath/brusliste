@@ -79,7 +79,6 @@ const BeverageApp = () => {
         alert('Network error. Please check your connection and try again.');
       }
     }
-    }
   };
 
   const openPaymentDialog = (person) => {
