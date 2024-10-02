@@ -6,8 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
-const API_URL = 'https://brusliste-backend.vercel.app/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
+const API_KEY = process.env.REACT_APP_API_KEY;
 const PRICE_PER_BEVERAGE = 10;
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'X-API-Key': API_KEY,
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true
+});
 
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
@@ -24,22 +34,51 @@ const BeverageApp = () => {
 
   const fetchPeople = async () => {
     try {
-      const response = await axios.get(`${API_URL}/people`);
+      const response = await api.get('/people');
       setPeople(response.data);
     } catch (error) {
       console.error('Error fetching people:', error);
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            alert('Unauthorized access. Please check your API key.');
+            break;
+          case 403:
+            alert('Forbidden. You do not have permission to access this resource.');
+            break;
+          default:
+            alert('An error occurred while fetching data. Please try again later.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
     }
   };
 
   const updateBeverage = async (id, increment) => {
     try {
-      const response = await axios.post(`${API_URL}/people`, {
+      const response = await api.post('/people', {
         name: people.find(p => p.id === id).name,
         beverages: increment
       });
       setPeople(response.data);
     } catch (error) {
       console.error('Error updating beverage count:', error);
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            alert('Unauthorized access. Please check your API key.');
+            break;
+          case 403:
+            alert('Forbidden. You do not have permission to access this resource.');
+            break;
+          default:
+            alert('An error occurred while fetching data. Please try again later.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
+    }
     }
   };
 
@@ -55,18 +94,32 @@ const BeverageApp = () => {
 
   const resetAfterPayment = async () => {
     try {
-      const response = await axios.post(`${API_URL}/people/${payingPerson.id}/pay`);
+      const response = await api.post(`/people/${payingPerson.id}/pay`);
       setPeople(response.data);
       closePaymentDialog();
     } catch (error) {
       console.error('Error resetting beverages:', error);
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            alert('Unauthorized access. Please check your API key.');
+            break;
+          case 403:
+            alert('Forbidden. You do not have permission to access this resource.');
+            break;
+          default:
+            alert('An error occurred while fetching data. Please try again later.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
     }
   };
 
   const addPerson = async () => {
     if (newPersonName.trim() !== '') {
       try {
-        const response = await axios.post(`${API_URL}/people`, {
+        const response = await api.post('/people', {
           name: newPersonName,
           beverages: 0
         });
@@ -74,17 +127,45 @@ const BeverageApp = () => {
         setNewPersonName('');
       } catch (error) {
         console.error('Error adding person:', error);
+        if (error.response) {
+          switch (error.response.status) {
+            case 401:
+              alert('Unauthorized access. Please check your API key.');
+              break;
+            case 403:
+              alert('Forbidden. You do not have permission to access this resource.');
+              break;
+            default:
+              alert('An error occurred while fetching data. Please try again later.');
+          }
+        } else {
+          alert('Network error. Please check your connection and try again.');
+        }
       }
     }
   };
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/transactions`);
+      const response = await api.get('/transactions');
       setTransactions(response.data);
       setShowTransactions(true);
     } catch (error) {
       console.error('Error fetching transactions:', error);
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            alert('Unauthorized access. Please check your API key.');
+            break;
+          case 403:
+            alert('Forbidden. You do not have permission to access this resource.');
+            break;
+          default:
+            alert('An error occurred while fetching data. Please try again later.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
     }
   };
 
@@ -95,14 +176,28 @@ const BeverageApp = () => {
 
   const quickBuy = async () => {
     try {
-      const response = await axios.post(`${API_URL}/quickbuy`);
+      const response = await api.post('/quickbuy');
       // Optionally update any relevant state here
       setShowQuickBuyDialog(false);
-      alert('Quick buy successful!');
+      
       // You might want to refresh the transaction list or update some stats here
     } catch (error) {
       console.error('Error processing quick buy:', error);
-      alert('Error processing quick buy. Please try again.');
+      alert('Feil ved hurtigkjøp. prøv igjen.');
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            alert('Unauthorized access. Please check your API key.');
+            break;
+          case 403:
+            alert('Forbidden. You do not have permission to access this resource.');
+            break;
+          default:
+            alert('An error occurred while fetching data. Please try again later.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
     }
   };
   
