@@ -61,10 +61,11 @@ const BeverageApp = () => {
 
   const updateBeverage = async (id, increment, beverageType) => {
     try {
-      const response = await api.post('/people', {
-        name: people.find(p => p.id === id).name,
+      const person = people.find(p => p.id === id);
+      const response = await api.post('/api/people', {
+        name: person.name,
         beverages: increment,
-        beverageType: beverageType
+        beverageType: beverageType || person.beverage_type || 'Cola'
       });
       setPeople(response.data);
     } catch (error) {
@@ -77,11 +78,16 @@ const BeverageApp = () => {
           case 403:
             alert('Forbidden. You do not have permission to access this resource.');
             break;
+          case 500:
+            alert(`Server error: ${error.response.data.details || 'Unknown error'}`);
+            break;
           default:
-            alert('An error occurred while fetching data. Please try again later.');
+            alert('An error occurred while updating data. Please try again later.');
         }
+      } else if (error.request) {
+        alert('No response received from the server. Please check your network connection.');
       } else {
-        alert('Network error. Please check your connection and try again.');
+        alert('Error setting up the request. Please try again.');
       }
     }
   };
