@@ -34,7 +34,7 @@ const Dashboard = () => {
     }
   };
 
-  if (!stats) return <div className="p-4">Loading statistics...</div>;
+  if (!stats) return <div className="p-4">Henter statistikk...</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8">
@@ -46,20 +46,20 @@ const Dashboard = () => {
           </div>
           <Link to="/" className="flex items-center text-blue-600 hover:text-blue-800">
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Main Page
+            Tilbake til hovedsiden
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Current Month Leaderboard</h3>
+            <h3 className="text-xl font-semibold mb-4">Oktober Leaderboard</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.currentMonthLeaderboard}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="total_amount" fill="#8884d8" name="Amount (NOK)" />
+                <Bar dataKey="total_beverages" fill="#8884d8" name="Antall brus kjøpt" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -72,19 +72,19 @@ const Dashboard = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="total_amount" fill="#82ca9d" name="Amount (NOK)" />
+                <Bar dataKey="total_beverages" fill="#82ca9d" name="Antall brus kjøpt" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="mt-8 bg-white p-4 rounded-lg shadow">
-          <h3 className="text-xl font-semibold mb-4">Beverage Type Distribution</h3>
+          <h3 className="text-xl font-semibold mb-4">Brusfordeling</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={stats.beverageTypeDistribution}
-                dataKey="percentage"
+                dataKey="count"
                 nameKey="beverage_type"
                 cx="50%"
                 cy="50%"
