@@ -62,7 +62,7 @@ const BeverageApp = () => {
   const updateBeverage = async (id, increment, beverageType) => {
     try {
       const person = people.find(p => p.id === id);
-      const response = await api.post('/api/people', {
+      const response = await api.post('/people', {
         name: person.name,
         beverages: increment,
         beverageType: beverageType || person.beverage_type || 'Cola'
