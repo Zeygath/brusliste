@@ -317,7 +317,7 @@ const BeverageApp = () => {
                 <Select
                   id="selectedBeverageType"
                   value={selectedBeverageType}
-                  onChange={(e) => setselectedBeverageType(e.target.value)}
+                  onChange={(e) => setSelectedBeverageType(e.target.value)}
                   className="mt-1"
                 >
                   <option value="Cola">Cola</option>
