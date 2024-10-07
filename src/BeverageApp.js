@@ -4,7 +4,7 @@ import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList,
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
-import { Select } from '.components/ui/select'
+import { Select } from './components/ui/select'
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
