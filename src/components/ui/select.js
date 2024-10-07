@@ -19,4 +19,4 @@ const Select = ({ value, onChange, children, className = '' }) => {
   );
 };
 
-export default Select;
+export { Select }
