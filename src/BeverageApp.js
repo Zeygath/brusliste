@@ -4,6 +4,7 @@ import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList,
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
+import { Select } from './components/ui/select';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
@@ -29,6 +30,7 @@ const BeverageApp = () => {
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showQuickBuyDialog, setShowQuickBuyDialog] = useState(false)
+  const [selectedBeverageType, setSelectedBeverageType] = useState('Cola Zero');
 
   useEffect(() => {
     fetchPeople();
@@ -61,7 +63,8 @@ const BeverageApp = () => {
     try {
       const response = await api.post('/people', {
         name: people.find(p => p.id === id).name,
-        beverages: increment
+        beverages: increment,
+        beverageType: selectedBeverageType
       });
       setPeople(response.data);
     } catch (error) {
@@ -177,7 +180,7 @@ const BeverageApp = () => {
 
   const quickBuy = async () => {
     try {
-      const response = await api.post('/quickbuy');
+      const response = await api.post('/quickbuy', {beverageType: selectedBeverageType} );
       // Optionally update any relevant state here
       setShowQuickBuyDialog(false);
       
