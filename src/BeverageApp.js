@@ -180,7 +180,7 @@ const BeverageApp = () => {
 
   const quickBuy = async () => {
     try {
-      const response = await api.post('/quickbuy', {beverageType: quickBuyBeverageType} );
+      const response = await api.post('/quickbuy', {beverageType: selectedBeverageType} );
       // Optionally update any relevant state here
       setShowQuickBuyDialog(false);
       
@@ -313,11 +313,11 @@ const BeverageApp = () => {
             <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
               <p className="font-bold mt-2">Pris: 10 NOK</p>
               <div className="my-4">
-                <label htmlFor="quickBuyBeverageType" className="block text-sm font-medium text-gray-700">Velg brustype:</label>
+                <label htmlFor="selectedBeverageType" className="block text-sm font-medium text-gray-700">Velg brustype:</label>
                 <Select
-                  id="quickBuyBeverageType"
-                  value={quickBuyBeverageType}
-                  onChange={(e) => setQuickBuyBeverageType(e.target.value)}
+                  id="selectedBeverageType"
+                  value={selectedBeverageType}
+                  onChange={(e) => setselectedBeverageType(e.target.value)}
                   className="mt-1"
                 >
                   <option value="Cola">Cola</option>
