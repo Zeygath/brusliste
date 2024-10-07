@@ -27,7 +27,7 @@ const RankingList = ({ data }) => (
             <span>{item.name}</span>
             {index === 0 && <Crown className="text-yellow-500 ml-2" size={20} />}
           </div>
-          <span className="font-semibold">{item.total_beverages} beverages</span>
+          <span className="font-semibold">{item.total_beverages} brus</span>
         </li>
       ))}
     </ul>
@@ -51,6 +51,10 @@ const Dashboard = () => {
 
   if (!stats) return <div className="p-4">Henter statistikk...</div>;
 
+    // Calculate the maximum value for the Y-axis
+    const maxBeverages = Math.max(...stats.allTimeLeaderboard.map(item => item.total_beverages));
+    const yAxisMax = Math.ceil(maxBeverages * 1.1); // Add 10% padding to the top
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -67,7 +71,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Leaderboard Denne Måneden</h3>
+            <h3 className="text-xl font-semibold mb-4">Denne Måneden</h3>
             <RankingList data={stats.currentMonthLeaderboard} />
           </div>
           
@@ -76,7 +80,10 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.allTimeLeaderboard}>
                 <XAxis dataKey="name" />
-                <YAxis />
+                <YAxis
+                    domain={[0, yAxisMax]} 
+                    tickFormatter={(value) => Math.round(value)}
+                />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="total_beverages" fill="#82ca9d" name="Antall brus kjøpt" />
