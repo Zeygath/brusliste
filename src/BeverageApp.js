@@ -20,10 +20,6 @@ const api = axios.create({
   withCredentials: true
 });
 
-api.interceptors.request.use(request => {
-  console.log('Request Headers:', request.headers);
-  return request;
-});
 
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
@@ -326,7 +322,7 @@ const BeverageApp = () => {
           </AlertDialog.Portal>
         </AlertDialog.Root>
 
-      <AlertDialog.Root open={showTransactions} onOpenChange={setShowTransactions}>
+        <AlertDialog.Root open={showTransactions} onOpenChange={setShowTransactions}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
           <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none overflow-y-auto">
@@ -343,8 +339,9 @@ const BeverageApp = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dato</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Navn</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Antall</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">kost</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kost</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brus Type</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -355,6 +352,7 @@ const BeverageApp = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.beverages}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatAmount(transaction.amount)} NOK</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{transaction.type}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.beverage_type}</td>
                     </tr>
                   ))}
                 </tbody>
