@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { Coffee, ArrowLeft } from 'lucide-react';
+import { Coffee, ArrowLeft, Crown } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
 const API_KEY = process.env.REACT_APP_API_KEY;
@@ -17,6 +17,21 @@ const api = axios.create({
 });
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+const RankingList = ({ data }) => (
+    <ul className="space-y-2">
+      {data.map((item, index) => (
+        <li key={item.name} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+          <div className="flex items-center">
+            <span className="font-bold mr-2">{index + 1}.</span>
+            <span>{item.name}</span>
+            {index === 0 && <Crown className="text-yellow-500 ml-2" size={20} />}
+          </div>
+          <span className="font-semibold">{item.total_beverages} beverages</span>
+        </li>
+      ))}
+    </ul>
+  );
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -52,20 +67,12 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Oktober Leaderboard</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.currentMonthLeaderboard}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="total_beverages" fill="#8884d8" name="Antall brus kjøpt" />
-              </BarChart>
-            </ResponsiveContainer>
+            <h3 className="text-xl font-semibold mb-4">Leaderboard Denne Måneden</h3>
+            <RankingList data={stats.currentMonthLeaderboard} />
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">All-Time Leaderboard</h3>
+            <h3 className="text-xl font-semibold mb-4">Leaderboard All-Time</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.allTimeLeaderboard}>
                 <XAxis dataKey="name" />
