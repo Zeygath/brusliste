@@ -4,6 +4,7 @@ import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList,
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
+import { Select } from '.components/ui/select'
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
@@ -212,10 +213,18 @@ const BeverageApp = () => {
             <Coffee className="h-10 w-10 text-green-500 mr-2" />
             <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center">
+            <Select
+              value={selectedBeverageType}
+              onChange={(e) => setSelectedBeverageType(e.target.value)}
+              className="mr-2"
+            >
+              <option value="Cola">Cola</option>
+              <option value="Cola Zero">Cola Zero</option>
+            </Select>
             <Button onClick={() => setShowQuickBuyDialog(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                <Zap className="h-5 w-5 mr-2" /> Hurtigkjøp
-              </Button>
+              <Zap className="h-5 w-5 mr-2" /> Hurtigkjøp
+            </Button>
             <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
               <ClipboardList className="h-5 w-5 mr-2" /> Se Transaksjoner
             </Button>
