@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, X, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, X, Zap, BarChart2} from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
@@ -226,6 +227,11 @@ const BeverageApp = () => {
             <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
               <ClipboardList className="h-5 w-5 mr-2" /> Se Transaksjoner
             </Button>
+            <Link to="/dashboard">
+              <Button className="bg-green-500 hover:bg-green-600 text-white">
+                <BarChart2 className="h-5 w-5 mr-2" /> Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
         
@@ -296,12 +302,12 @@ const BeverageApp = () => {
             <div className="flex justify-end gap-[15px]">
               <AlertDialog.Cancel asChild>
                 <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={closePaymentDialog}>
-                  Cancel
+                  Avbryt
                 </button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>
                 <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={resetAfterPayment}>
-                  Done
+                  Ferdig
                 </button>
               </AlertDialog.Action>
             </div>
