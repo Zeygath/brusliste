@@ -31,6 +31,9 @@ const BeverageApp = () => {
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showQuickBuyDialog, setShowQuickBuyDialog] = useState(false)
+  const [showBeverageDialog, setShowBeverageDialog] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(null);
   const [selectedBeverageType, setSelectedBeverageType] = useState('Cola Zero');
 
   useEffect(() => {
@@ -60,13 +63,33 @@ const BeverageApp = () => {
     }
   };
 
+  const openBeverageDialog = (person, action) => {
+    setSelectedPerson(person);
+    setSelectedAction(action);
+    setSelectedBeverageType(person.beverage_type || 'Cola');
+    setShowBeverageDialog(true);
+  };
+
+  const closeBeverageDialog = () => {
+    setShowBeverageDialog(false);
+    setSelectedPerson(null);
+    setSelectedAction(null);
+  };
+
+  const confirmBeverageUpdate = async () => {
+    if (selectedPerson && selectedAction) {
+      const increment = selectedAction === 'add' ? 1 : -1;
+      await updateBeverage(selectedPerson.id, increment, selectedBeverageType);
+    }
+    closeBeverageDialog();
+  };
+
   const updateBeverage = async (id, increment, beverageType) => {
     try {
-      const person = people.find(p => p.id === id);
       const response = await api.post('/people', {
-        name: person.name,
+        name: people.find(p => p.id === id).name,
         beverages: increment,
-        beverageType: beverageType || person.beverage_type || 'Cola'
+        beverageType: beverageType
       });
       setPeople(response.data);
     } catch (error) {
@@ -211,6 +234,8 @@ const BeverageApp = () => {
       }
     }
   };
+
+
   
   return (
     <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
@@ -247,18 +272,10 @@ const BeverageApp = () => {
                   <span className="text-base sm:text-lg md:text-xl text-gray-500 ml-2">brus registrert</span>
                 </span>
                 <div className="flex items-center justify-between mt-4">
-                  <Button variant="outline" className="flex-grow mr-2 text-red-500 border-red-500 hover:bg-red-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => updateBeverage(person.id, -1, person.beverage_type)}>
+                  <Button variant="outline" className="flex-grow mr-2 text-red-500 border-red-500 hover:bg-red-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openBeverageDialog(person, 'remove')}>
                     <MinusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
                   </Button>
-                  <Select
-                    value={person.beverage_type || 'Cola'}
-                    onChange={(e) => updateBeverage(person.id, 0, e.target.value)}
-                    className="flex-grow mr-2"
-                  >
-                    <option value="Cola">Cola</option>
-                    <option value="Cola Zero">Cola Zero</option>
-                  </Select>
-                  <Button variant="outline" className="flex-grow mr-2 text-green-500 border-green-500 hover:bg-green-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => updateBeverage(person.id, 1, person.beverage_type || 'Cola')}>
+                  <Button variant="outline" className="flex-grow mr-2 text-green-500 border-green-500 hover:bg-green-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openBeverageDialog(person, 'add')}>
                     <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
                   </Button>
                   <Button variant="outline" className="flex-grow text-blue-500 border-blue-500 hover:bg-blue-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openPaymentDialog(person)}>
@@ -269,7 +286,8 @@ const BeverageApp = () => {
             </Card>
           ))}
         </div>
-
+        
+        
         <div className="bg-white p-4 rounded-lg shadow mt-4">
           <div className="flex items-center">
             <Input
@@ -308,6 +326,40 @@ const BeverageApp = () => {
               <AlertDialog.Action asChild>
                 <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={resetAfterPayment}>
                   Ferdig
+                </button>
+              </AlertDialog.Action>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+
+      <AlertDialog.Root open={showBeverageDialog} onOpenChange={setShowBeverageDialog}>
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
+          <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
+              {selectedAction === 'add' ? 'Add Beverage' : 'Remove Beverage'}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
+              <p>Hei {selectedPerson?.name}! Velg hvilken drikke du har tatt:</p>
+              <Select
+                value={selectedBeverageType}
+                onChange={(e) => setSelectedBeverageType(e.target.value)}
+                className="mt-2"
+              >
+                <option value="Cola">Cola</option>
+                <option value="Cola Zero">Cola Zero</option>
+              </Select>
+            </AlertDialog.Description>
+            <div className="flex justify-end gap-[15px]">
+              <AlertDialog.Cancel asChild>
+                <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={closeBeverageDialog}>
+                  Avbryt
+                </button>
+              </AlertDialog.Cancel>
+              <AlertDialog.Action asChild>
+                <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={confirmBeverageUpdate}>
+                  Bekreft
                 </button>
               </AlertDialog.Action>
             </div>
