@@ -31,9 +31,9 @@ const BeverageApp = () => {
   const [selectedBeverageType, setSelectedBeverageType] = useState('Cola Zero');
   const [isCoffeeMode, setIsCoffeeMode] = useState(false);
   const [coffeeData, setCoffeeData] = useState([]);
-  const [showCoffeeDialog, setShowCoffeeDialog] = useState(false);
-  const [coffeeAmount, setCoffeeAmount] = useState(1);
-  const [coffeePurchaseAmount, setCoffeePurchaseAmount] = useState(0);
+  const [showCoffeePurchaseDialog, setShowCoffeePurchaseDialog] = useState(false);
+  const [coffeeBags, setCoffeeBags] = useState(1);
+  const [coffeeCost, setCoffeeCost] = useState(0);
 
   useEffect(() => {
     fetchPeople();
@@ -163,19 +163,34 @@ const BeverageApp = () => {
     }
   };
 
-  const handleCoffeeUpdate = async (person) => {
+  const handleCoffeeConsumption = async (person) => {
     try {
       await api.post('/coffee-tracker', {
         userId: person.id,
-        cupsConsumed: coffeeAmount,
-        coffeePurchased: coffeePurchaseAmount
+        cupsConsumed: 1,
+        coffeePurchased: 0
       });
       fetchCoffeeData();
-      setShowCoffeeDialog(false);
-      setCoffeeAmount(1);
-      setCoffeePurchaseAmount(0);
     } catch (error) {
-      console.error('Feil ved oppdatering av kaffetracker:', error);
+      console.error('Feil ved oppdatering av kaffeforbruk:', error);
+      handleApiError(error);
+    }
+  };
+
+  const handleCoffeePurchase = async () => {
+    try {
+      await api.post('/coffee-tracker', {
+        userId: selectedPerson.id,
+        cupsConsumed: 0,
+        coffeePurchased: coffeeCost,
+        coffeeBags: coffeeBags
+      });
+      fetchCoffeeData();
+      setShowCoffeePurchaseDialog(false);
+      setCoffeeBags(1);
+      setCoffeeCost(0);
+    } catch (error) {
+      console.error('Feil ved registrering av kaffekjøp:', error);
       handleApiError(error);
     }
   };
@@ -248,15 +263,23 @@ const BeverageApp = () => {
                   <span className="text-lg font-semibold text-blue-600 mt-2">
                     Saldo: {formatAmount(person.balance)} NOK
                   </span>
-                  <button 
-                    onClick={() => {
-                      setSelectedPerson(person);
-                      setShowCoffeeDialog(true);
-                    }}
-                    className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-                  >
-                    Oppdater kaffe
-                  </button>
+                  <div className="flex justify-between mt-4">
+                    <button
+                      onClick={() => handleCoffeeConsumption(person)}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md"
+                    >
+                      Ta en kopp kaffe
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedPerson(person);
+                        setShowCoffeePurchaseDialog(true);
+                      }}
+                      className="flex-1 ml-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+                    >
+                      Registrer kaffekjøp
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -313,7 +336,7 @@ const BeverageApp = () => {
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Bekreft betaling</h2>
               <p>
-                Er du sikker på at du vil betale for {payingPerson?.name}?
+                Er du sikker på at du vil tilbakestille drikketellingen for {payingPerson?.name}?
               </p>
               <p className="font-bold mt-2">
                 Totalt: {formatAmount((payingPerson?.beverages || 0) * PRICE_PER_BEVERAGE)} NOK
@@ -372,6 +395,8 @@ const BeverageApp = () => {
               >
                 <option value="Cola">Cola</option>
                 <option value="Cola Zero">Cola Zero</option>
+                <option value="Fanta">Fanta</option>
+                <option value="Sprite">Sprite</option>
               </select>
               <div className="flex justify-end">
                 <button onClick={() => setShowQuickBuyDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
@@ -394,6 +419,8 @@ const BeverageApp = () => {
               >
                 <option value="Cola">Cola</option>
                 <option value="Cola Zero">Cola Zero</option>
+                <option value="Fanta">Fanta</option>
+                <option value="Sprite">Sprite</option>
               </select>
               <div className="flex justify-end">
                 <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
@@ -403,40 +430,40 @@ const BeverageApp = () => {
           </div>
         )}
 
-        {showCoffeeDialog && (
+        {showCoffeePurchaseDialog && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4">Oppdater kaffe</h2>
+              <h2 className="text-xl font-bold mb-4">Registrer kjøp av kaffepose</h2>
               <div className="mb-4">
-                <label htmlFor="coffeeAmount" className="block text-sm font-medium text-gray-700 mb-1">
-                  Kopper kaffe
+                <label htmlFor="coffeeBags" className="block text-sm font-medium text-gray-700 mb-1">
+                  Antall poser kaffe
                 </label>
                 <input
-                  id="coffeeAmount"
+                  id="coffeeBags"
                   type="number"
-                  value={coffeeAmount}
-                  onChange={(e) => setCoffeeAmount(Number(e.target.value))}
-                  min="0"
+                  value={coffeeBags}
+                  onChange={(e) => setCoffeeBags(Number(e.target.value))}
+                  min="1"
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="coffeePurchaseAmount" className="block text-sm font-medium text-gray-700 mb-1">
-                  Kaffe kjøpt (NOK)
+                <label htmlFor="coffeeCost" className="block text-sm font-medium text-gray-700 mb-1">
+                  Totalkostnad (NOK)
                 </label>
                 <input
-                  id="coffeePurchaseAmount"
+                  id="coffeeCost"
                   type="number"
-                  value={coffeePurchaseAmount}
-                  onChange={(e) => setCoffeePurchaseAmount(Number(e.target.value))}
+                  value={coffeeCost}
+                  onChange={(e) => setCoffeeCost(Number(e.target.value))}
                   min="0"
                   step="0.01"
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="flex justify-end">
-                <button onClick={() => setShowCoffeeDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
-                <button onClick={() => handleCoffeeUpdate(selectedPerson)} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft</button>
+                <button onClick={() => setShowCoffeePurchaseDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
+                <button onClick={handleCoffeePurchase} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft kjøp</button>
               </div>
             </div>
           </div>
