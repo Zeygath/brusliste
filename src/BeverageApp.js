@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, X, Zap, BarChart2} from 'lucide-react';
-import { Button } from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { Input } from './components/ui/input';
-import { Select } from './components/ui/select'
-import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, Zap, BarChart2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
 const API_KEY = process.env.REACT_APP_API_KEY;
 const PRICE_PER_BEVERAGE = 10;
-
+const PRICE_PER_COFFEE = 1;
 
 const api = axios.create({
   baseURL: API_URL,
@@ -22,7 +17,6 @@ const api = axios.create({
   withCredentials: false
 });
 
-
 const BeverageApp = () => {
   const [people, setPeople] = useState([]);
   const [newPersonName, setNewPersonName] = useState('');
@@ -30,36 +24,44 @@ const BeverageApp = () => {
   const [payingPerson, setPayingPerson] = useState(null);
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
-  const [showQuickBuyDialog, setShowQuickBuyDialog] = useState(false)
+  const [showQuickBuyDialog, setShowQuickBuyDialog] = useState(false);
   const [showBeverageDialog, setShowBeverageDialog] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedAction, setSelectedAction] = useState(null);
   const [selectedBeverageType, setSelectedBeverageType] = useState('Cola Zero');
+  const [isCoffeeMode, setIsCoffeeMode] = useState(false);
+  const [coffeeData, setCoffeeData] = useState([]);
+  const [showCoffeeDialog, setShowCoffeeDialog] = useState(false);
+  const [coffeeAmount, setCoffeeAmount] = useState(1);
+  const [coffeePurchaseAmount, setCoffeePurchaseAmount] = useState(0);
 
   useEffect(() => {
     fetchPeople();
   }, []);
+
+  useEffect(() => {
+    if (isCoffeeMode) {
+      fetchCoffeeData();
+    }
+  }, [isCoffeeMode]);
 
   const fetchPeople = async () => {
     try {
       const response = await api.get('/people');
       setPeople(response.data);
     } catch (error) {
-      console.error('Error fetching people:', error);
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            alert('Unauthorized access. Please check your API key.');
-            break;
-          case 403:
-            alert('Forbidden. You do not have permission to access this resource.');
-            break;
-          default:
-            alert('An error occurred while fetching data. Please try again later.');
-        }
-      } else {
-        alert('Network error. Please check your connection and try again.');
-      }
+      console.error('Feil ved henting av personer:', error);
+      handleApiError(error);
+    }
+  };
+
+  const fetchCoffeeData = async () => {
+    try {
+      const response = await api.get('/coffee-balance');
+      setCoffeeData(response.data);
+    } catch (error) {
+      console.error('Feil ved henting av kaffedata:', error);
+      handleApiError(error);
     }
   };
 
@@ -87,32 +89,14 @@ const BeverageApp = () => {
   const updateBeverage = async (id, increment, beverageType) => {
     try {
       const response = await api.post('/people', {
-        name: people.find(p => p.id === id).name,
+        name: people.find(p => p.id === id)?.name,
         beverages: increment,
         beverageType: beverageType
       });
       setPeople(response.data);
     } catch (error) {
-      console.error('Error updating beverage count:', error);
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            alert('Unauthorized access. Please check your API key.');
-            break;
-          case 403:
-            alert('Forbidden. You do not have permission to access this resource.');
-            break;
-          case 500:
-            alert(`Server error: ${error.response.data.details || 'Unknown error'}`);
-            break;
-          default:
-            alert('An error occurred while updating data. Please try again later.');
-        }
-      } else if (error.request) {
-        alert('No response received from the server. Please check your network connection.');
-      } else {
-        alert('Error setting up the request. Please try again.');
-      }
+      console.error('Feil ved oppdatering av drikke:', error);
+      handleApiError(error);
     }
   };
 
@@ -132,21 +116,8 @@ const BeverageApp = () => {
       setPeople(response.data);
       closePaymentDialog();
     } catch (error) {
-      console.error('Error resetting beverages:', error);
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            alert('Unauthorized access. Please check your API key.');
-            break;
-          case 403:
-            alert('Forbidden. You do not have permission to access this resource.');
-            break;
-          default:
-            alert('An error occurred while fetching data. Please try again later.');
-        }
-      } else {
-        alert('Network error. Please check your connection and try again.');
-      }
+      console.error('Feil ved tilbakestilling av drikke:', error);
+      handleApiError(error);
     }
   };
 
@@ -160,21 +131,8 @@ const BeverageApp = () => {
         setPeople(response.data);
         setNewPersonName('');
       } catch (error) {
-        console.error('Error adding person:', error);
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              alert('Unauthorized access. Please check your API key.');
-              break;
-            case 403:
-              alert('Forbidden. You do not have permission to access this resource.');
-              break;
-            default:
-              alert('An error occurred while fetching data. Please try again later.');
-          }
-        } else {
-          alert('Network error. Please check your connection and try again.');
-        }
+        console.error('Feil ved tillegg av person:', error);
+        handleApiError(error);
       }
     }
   };
@@ -185,270 +143,308 @@ const BeverageApp = () => {
       setTransactions(response.data);
       setShowTransactions(true);
     } catch (error) {
-      console.error('Error fetching transactions:', error);
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            alert('Unauthorized access. Please check your API key.');
-            break;
-          case 403:
-            alert('Forbidden. You do not have permission to access this resource.');
-            break;
-          default:
-            alert('An error occurred while fetching data. Please try again later.');
-        }
-      } else {
-        alert('Network error. Please check your connection and try again.');
-      }
+      console.error('Feil ved henting av transaksjoner:', error);
+      handleApiError(error);
     }
   };
 
   const formatAmount = (amount) => {
-    const numAmount = Number(amount);
-    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
+    return Number(amount).toFixed(2);
   };
 
   const quickBuy = async () => {
     try {
-      const response = await api.post('/quickbuy', {beverageType: selectedBeverageType} );
-      // Optionally update any relevant state here
+      await api.post('/quickbuy', { beverageType: selectedBeverageType });
       setShowQuickBuyDialog(false);
-      
-      // You might want to refresh the transaction list or update some stats here
+      fetchTransactions();
     } catch (error) {
-      console.error('Error processing quick buy:', error);
-      alert('Feil ved hurtigkjøp. prøv igjen.');
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            alert('Unauthorized access. Please check your API key.');
-            break;
-          case 403:
-            alert('Forbidden. You do not have permission to access this resource.');
-            break;
-          default:
-            alert('An error occurred while fetching data. Please try again later.');
-        }
-      } else {
-        alert('Network error. Please check your connection and try again.');
-      }
+      console.error('Feil ved hurtigkjøp:', error);
+      handleApiError(error);
     }
   };
 
+  const handleCoffeeUpdate = async (person) => {
+    try {
+      await api.post('/coffee-tracker', {
+        userId: person.id,
+        cupsConsumed: coffeeAmount,
+        coffeePurchased: coffeePurchaseAmount
+      });
+      fetchCoffeeData();
+      setShowCoffeeDialog(false);
+      setCoffeeAmount(1);
+      setCoffeePurchaseAmount(0);
+    } catch (error) {
+      console.error('Feil ved oppdatering av kaffetracker:', error);
+      handleApiError(error);
+    }
+  };
 
-  
+  const handleApiError = (error) => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          alert('Uautorisert tilgang. Vennligst sjekk API-nøkkelen din.');
+          break;
+        case 403:
+          alert('Forbudt. Du har ikke tillatelse til å få tilgang til denne ressursen.');
+          break;
+        case 500:
+          alert(`Serverfeil: ${error.response.data.details || 'Ukjent feil'}`);
+          break;
+        default:
+          alert('Det oppstod en feil ved oppdatering av data. Vennligst prøv igjen senere.');
+      }
+    } else if (error.request) {
+      alert('Ingen respons mottatt fra serveren. Vennligst sjekk nettverkstilkoblingen din.');
+    } else {
+      alert('Feil ved oppsett av forespørselen. Vennligst prøv igjen.');
+    }
+  };
+
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 p-4 sm:p-6 md:p-8 flex flex-col">
       <div className="flex-grow flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <Coffee className="h-10 w-10 text-green-500 mr-2" />
             <h1 className="text-3xl font-bold text-gray-800">Brusliste</h1>
           </div>
-          <div className="flex space-x-2">
-            <Button onClick={() => setShowQuickBuyDialog(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white">
+          <div className="flex space-x-2 items-center">
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isCoffeeMode}
+                onChange={(e) => setIsCoffeeMode(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                {isCoffeeMode ? 'Kaffemodus' : 'Drikkemodus'}
+              </span>
+            </label>
+            <button onClick={() => setShowQuickBuyDialog(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md flex items-center">
               <Zap className="h-5 w-5 mr-2" /> Hurtigkjøp
-            </Button>
-            <Button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white">
+            </button>
+            <button onClick={fetchTransactions} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
               <ClipboardList className="h-5 w-5 mr-2" /> Se Transaksjoner
-            </Button>
-            <Link to="/dashboard">
-              <Button className="bg-green-500 hover:bg-green-600 text-white">
-                <BarChart2 className="h-5 w-5 mr-2" /> Dashboard
-              </Button>
+            </button>
+            <Link to="/dashboard" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center">
+              <BarChart2 className="h-5 w-5 mr-2" /> Dashbord
             </Link>
           </div>
         </div>
         
-        <div className="flex-grow grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 auto-rows-fr">
-          {people.map((person) => (
-            <Card key={person.id} className="bg-white border-l-4 border-green-500 transition-all duration-300 hover:shadow-md flex flex-col p-4">
-              <CardHeader className="flex-shrink-0 p-0">
-                <CardTitle className="text-xl sm:text-2xl md:text-3xl text-gray-700 truncate">{person.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-between p-0 mt-4">
-                <span className="text-3xl sm:text-4xl md:text-5xl font-semibold text-green-600">
-                  {person.beverages}
-                  <span className="text-base sm:text-lg md:text-xl text-gray-500 ml-2">brus registrert</span>
-                </span>
-                <div className="flex items-center justify-between mt-4">
-                  <Button variant="outline" className="flex-grow mr-2 text-red-500 border-red-500 hover:bg-red-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openBeverageDialog(person, 'remove')}>
-                    <MinusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
-                  </Button>
-                  <Button variant="outline" className="flex-grow mr-2 text-green-500 border-green-500 hover:bg-green-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openBeverageDialog(person, 'add')}>
-                    <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
-                  </Button>
-                  <Button variant="outline" className="flex-grow text-blue-500 border-blue-500 hover:bg-blue-100 text-lg sm:text-xl md:text-2xl py-2 sm:py-3 md:py-4" onClick={() => openPaymentDialog(person)}>
-                    <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {(isCoffeeMode ? coffeeData : people).map((person) => (
+            <div key={person.id} className="bg-white rounded-lg shadow-md p-4 flex flex-col">
+              <h2 className="text-xl font-semibold mb-2">{person.name}</h2>
+              {isCoffeeMode ? (
+                <>
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-semibold text-green-600">
+                    {person.cups_consumed || 0}
+                  </span>
+                  <span className="text-sm text-gray-500">Kopper kaffe</span>
+                  <span className="text-lg font-semibold text-blue-600 mt-2">
+                    Saldo: {formatAmount(person.balance)} NOK
+                  </span>
+                  <button 
+                    onClick={() => {
+                      setSelectedPerson(person);
+                      setShowCoffeeDialog(true);
+                    }}
+                    className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+                  >
+                    Oppdater kaffe
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-semibold text-green-600">
+                    {person.beverages}
+                  </span>
+                  <span className="text-sm text-gray-500">{person.beverage_type || 'Drikke'}</span>
+                  <span className="text-lg font-semibold text-blue-600 mt-2">
+                    {formatAmount(person.beverages * PRICE_PER_BEVERAGE)} NOK
+                  </span>
+                  <div className="flex justify-between mt-4">
+                    <button
+                      onClick={() => openBeverageDialog(person, 'add')}
+                      className="flex-1 mr-2 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-md"
+                    >
+                      <PlusCircle className="h-5 w-5 mx-auto" />
+                    </button>
+                    <button
+                      onClick={() => openBeverageDialog(person, 'remove')}
+                      className="flex-1 mr-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                      disabled={person.beverages === 0}
+                    >
+                      <MinusCircle className="h-5 w-5 mx-auto" />
+                    </button>
+                    <button
+                      onClick={() => openPaymentDialog(person)}
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
+                      disabled={person.beverages === 0}
+                    >
+                      <ShoppingCart className="h-5 w-5 mx-auto" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ))}
         </div>
-        
-        
-        <div className="bg-white p-4 rounded-lg shadow mt-4">
-          <div className="flex items-center">
-            <Input
-              type="text"
-              placeholder="Navn på ny person"
-              value={newPersonName}
-              onChange={(e) => setNewPersonName(e.target.value)}
-              className="mr-2 flex-grow text-lg"
-            />
-            <Button onClick={addPerson} className="bg-green-500 hover:bg-green-600 text-white text-lg py-2 px-4">
-              <UserPlus className="h-6 w-6 mr-2" /> Legg til person
-            </Button>
-          </div>
+
+        <div className="mt-8 flex items-center">
+          <input
+            type="text"
+            placeholder="Legg til ny person"
+            value={newPersonName}
+            onChange={(e) => setNewPersonName(e.target.value)}
+            className="flex-grow mr-2 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button onClick={addPerson} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center">
+            <UserPlus className="h-5 w-5 mr-2" /> Legg til person
+          </button>
         </div>
-      </div>
 
-      <AlertDialog.Root open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
-          <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
-              Betaling for {payingPerson?.name}
-            </AlertDialog.Title>
-            <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="text-2xl font-bold text-green-600 mb-4">Å betale: {payingPerson?.beverages * PRICE_PER_BEVERAGE} NOK</p>
-              <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
-                <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg'/></span>
+        {showPaymentDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">Bekreft betaling</h2>
+              <p>
+                Er du sikker på at du vil betale for {payingPerson?.name}?
+              </p>
+              <p className="font-bold mt-2">
+                Totalt: {formatAmount((payingPerson?.beverages || 0) * PRICE_PER_BEVERAGE)} NOK
+              </p>
+              <div className="flex justify-end mt-4">
+                <button onClick={closePaymentDialog} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
+                <button onClick={resetAfterPayment} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft betaling</button>
               </div>
-            </AlertDialog.Description>
-            <div className="flex justify-end gap-[15px]">
-              <AlertDialog.Cancel asChild>
-                <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={closePaymentDialog}>
-                  Avbryt
-                </button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={resetAfterPayment}>
-                  Ferdig
-                </button>
-              </AlertDialog.Action>
             </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+          </div>
+        )}
 
-      <AlertDialog.Root open={showBeverageDialog} onOpenChange={setShowBeverageDialog}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
-          <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
-              {selectedAction === 'add' ? 'Legg til Brus' : 'Fjern Brus'}
-            </AlertDialog.Title>
-            <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p>Hei {selectedPerson?.name}! Velg hvilken drikke du har tatt:</p>
-              <Select
-                value={selectedBeverageType}
-                onChange={(e) => setSelectedBeverageType(e.target.value)}
-                className="mt-2"
-              >
-                <option value="Cola">Cola</option>
-                <option value="Cola Zero">Cola Zero</option>
-              </Select>
-            </AlertDialog.Description>
-            <div className="flex justify-end gap-[15px]">
-              <AlertDialog.Cancel asChild>
-                <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={closeBeverageDialog}>
-                  Avbryt
-                </button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <button className="text-white bg-green-500 hover:bg-green-600 focus:shadow-green-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={confirmBeverageUpdate}>
-                  Bekreft
-                </button>
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
-
-      <AlertDialog.Root open={showQuickBuyDialog} onOpenChange={setShowQuickBuyDialog}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
-          <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold">
-              Hurtigkjøp
-            </AlertDialog.Title>
-            <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <p className="font-bold mt-2">Pris: 10 NOK</p>
-              <div className="my-4">
-                <label htmlFor="selectedBeverageType" className="block text-sm font-medium text-gray-700">Velg brustype:</label>
-                <Select
-                  id="selectedBeverageType"
-                  value={selectedBeverageType}
-                  onChange={(e) => setSelectedBeverageType(e.target.value)}
-                  className="mt-1"
-                >
-                  <option value="Cola">Cola</option>
-                  <option value="Cola Zero">Cola Zero</option>
-                </Select>
-              </div>
-              <div className="bg-gray-200 w-48 h-48 mx-auto my-4 flex items-center justify-center rounded-lg shadow-inner">
-                <span className="text-gray-500"><img src='https://i.imgur.com/kCr1BON.jpeg' alt="QR Code" /></span>
-              </div>
-            </AlertDialog.Description>
-            <div className="flex justify-end gap-[15px]">
-              <AlertDialog.Cancel asChild>
-                <button className="text-gray-600 bg-gray-200 hover:bg-gray-300 focus:shadow-gray-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]">
-                  Avbryt
-                </button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <button className="text-white bg-yellow-500 hover:bg-yellow-600 focus:shadow-yellow-400 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]" onClick={quickBuy}>
-                  Bekreft kjøp
-                </button>
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
-
-        <AlertDialog.Root open={showTransactions} onOpenChange={setShowTransactions}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
-          <AlertDialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none overflow-y-auto">
-            <AlertDialog.Title className="text-green-700 m-0 text-[20px] font-semibold flex justify-between items-center"> 
-              <span>Transaction History</span>
-              <Button onClick={() => setShowTransactions(false)} variant="ghost" size="sm">
-                <X className="h-4 w-4" />
-              </Button>
-            </AlertDialog.Title>
-            <AlertDialog.Description className="text-gray-600 mt-4 mb-5 text-[15px] leading-normal">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        {showTransactions && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
+              <h2 className="text-xl font-bold mb-4">Transaksjoner</h2>
+              <table className="w-full">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dato</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Navn</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Antall</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kost</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brus Type</th>
+                    <th className="text-left">Dato</th>
+                    <th className="text-left">Navn</th>
+                    <th className="text-left">Drikke</th>
+                    <th className="text-left">Beløp</th>
+                    <th className="text-left">Type</th>
+                    <th className="text-left">Drikketype</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {transactions.map((transaction) => (
                     <tr key={transaction.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(transaction.date).toLocaleString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{transaction.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.beverages}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatAmount(transaction.amount)} NOK</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{transaction.type}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.beverage_type}</td>
+                      <td>{new Date(transaction.date).toLocaleString()}</td>
+                      <td>{transaction.name}</td>
+                      <td>{transaction.beverages}</td>
+                      <td>{formatAmount(transaction.amount)} NOK</td>
+                      <td className="capitalize">{transaction.type}</td>
+                      <td>{transaction.beverage_type}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </AlertDialog.Description>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+              <div className="flex justify-end mt-4">
+                <button onClick={() => setShowTransactions(false)} className="px-4 py-2 bg-blue-500 text-white rounded-md">Lukk</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showQuickBuyDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">Hurtigkjøp</h2>
+              <select
+                value={selectedBeverageType}
+                onChange={(e) => setSelectedBeverageType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              >
+                <option value="Cola">Cola</option>
+                <option value="Cola Zero">Cola Zero</option>
+              </select>
+              <div className="flex justify-end">
+                <button onClick={() => setShowQuickBuyDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
+                <button onClick={quickBuy} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft kjøp</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBeverageDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">
+                {selectedAction === 'add' ? 'Legg til drikke' : 'Fjern drikke'}
+              </h2>
+              <select
+                value={selectedBeverageType}
+                onChange={(e) => setSelectedBeverageType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              >
+                <option value="Cola">Cola</option>
+                <option value="Cola Zero">Cola Zero</option>
+              </select>
+              <div className="flex justify-end">
+                <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
+                <button onClick={confirmBeverageUpdate} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCoffeeDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">Oppdater kaffe</h2>
+              <div className="mb-4">
+                <label htmlFor="coffeeAmount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Kopper kaffe
+                </label>
+                <input
+                  id="coffeeAmount"
+                  type="number"
+                  value={coffeeAmount}
+                  onChange={(e) => setCoffeeAmount(Number(e.target.value))}
+                  min="0"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="coffeePurchaseAmount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Kaffe kjøpt (NOK)
+                </label>
+                <input
+                  id="coffeePurchaseAmount"
+                  type="number"
+                  value={coffeePurchaseAmount}
+                  onChange={(e) => setCoffeePurchaseAmount(Number(e.target.value))}
+                  min="0"
+                  step="0.01"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => setShowCoffeeDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">Avbryt</button>
+                <button onClick={() => handleCoffeeUpdate(selectedPerson)} className="px-4 py-2 bg-green-500 text-white rounded-md">Bekreft</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default BeverageApp;
+
