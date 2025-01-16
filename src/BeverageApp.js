@@ -457,7 +457,7 @@ const BeverageApp = () => {
                   value={coffeeCost}
                   onChange={(e) => setCoffeeCost(Number(e.target.value))}
                   min="0"
-                  step="0.01"
+                  step="1"
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
