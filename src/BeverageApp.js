@@ -233,7 +233,7 @@ const BeverageApp = () => {
         <button onClick={() => setIsCoffeeMode(!isCoffeeMode)} className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-2 px-4 rounded">
           <Coffee className="inline-block mr-1" /> {isCoffeeMode ? 'Brus modus' : 'Kaffe modus'}
         </button>
-        <Link to="/dashboard" className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block">
+        <Link to="/stats" className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block">
           <BarChart2 className="inline-block mr-1" /> Dashboard
         </Link>
       </div>
