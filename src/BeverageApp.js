@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, Zap, BarChart2 } from 'lucide-react';
+import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, Zap, BarChart2, MoreVertical, Trash2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
 const API_KEY = process.env.REACT_APP_API_KEY;
@@ -34,6 +34,7 @@ const BeverageApp = () => {
   const [showCoffeePurchaseDialog, setShowCoffeePurchaseDialog] = useState(false);
   const [coffeeBags, setCoffeeBags] = useState(1);
   const [coffeeCost, setCoffeeCost] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(null);
 
   useEffect(() => {
     fetchPeople();
@@ -192,6 +193,20 @@ const BeverageApp = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    try {
+      await api.delete(`/people/${userId}`);
+      fetchPeople();
+    } catch (error) {
+      console.error('Feil ved sletting av bruker:', error);
+      handleApiError(error);
+    }
+  };
+
+  const toggleDropdown = (personId) => {
+    setShowDropdown(showDropdown === personId ? null : personId);
+  };
+
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -253,23 +268,43 @@ const BeverageApp = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {people.map((person) => (
-            <div key={person.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col justify-between">
+            <div key={person.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col justify-between relative">
+              <div className="absolute top-2 right-2">
+                <button
+                  onClick={() => toggleDropdown(person.id)}
+                  className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  <MoreVertical size={20} />
+                </button>
+                {showDropdown === person.id && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                    <button
+                      onClick={() => openBeverageDialog(person, 'remove')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <MinusCircle className="inline-block mr-2" size={16} />
+                      Fjern drikke
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(person.id)}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <Trash2 className="inline-block mr-2" size={16} />
+                      Slett bruker
+                    </button>
+                  </div>
+                )}
+              </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
                 <p>{person.beverages} {person.beverage_type}</p>
               </div>
-              <div className="mt-4 flex justify-between">
+              <div className="mt-4 flex justify-between items-center">
                 <button
                   onClick={() => openBeverageDialog(person, 'add')}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex-grow mr-2"
                 >
                   <PlusCircle className="inline-block mr-1" /> Legg til
-                </button>
-                <button
-                  onClick={() => openBeverageDialog(person, 'remove')}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
-                >
-                  <MinusCircle className="inline-block mr-1" /> Fjern
                 </button>
                 {person.beverages > 0 && (
                   <button
@@ -277,7 +312,7 @@ const BeverageApp = () => {
                       setPayingPerson(person);
                       setShowPaymentDialog(true);
                     }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex-shrink-0"
                   >
                     <ShoppingCart className="inline-block mr-1" /> Betal
                   </button>
