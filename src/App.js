@@ -36,5 +36,5 @@ function Home() {
   );
 }
 
-export default BeverageApp;
+export default App;
 
