@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, Zap, BarChart2, Package } from 'lucide-react';
+import { PlusCircle, MinusCircle, ShoppingCart, Coffee, UserPlus, ClipboardList, Zap, BarChart2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://brusliste-backend.vercel.app/api';
 const API_KEY = process.env.REACT_APP_API_KEY;
@@ -34,13 +34,9 @@ const BeverageApp = () => {
   const [showCoffeePurchaseDialog, setShowCoffeePurchaseDialog] = useState(false);
   const [coffeeBags, setCoffeeBags] = useState(1);
   const [coffeeCost, setCoffeeCost] = useState(0);
-  const [inventory, setInventory] = useState([]);
-  const [showInventoryDialog, setShowInventoryDialog] = useState(false);
-  const [newInventoryItem, setNewInventoryItem] = useState({ beverageType: '', quantity: 0 });
 
   useEffect(() => {
     fetchPeople();
-    fetchInventory();
   }, []);
 
   useEffect(() => {
@@ -55,16 +51,6 @@ const BeverageApp = () => {
       setPeople(response.data);
     } catch (error) {
       console.error('Feil ved henting av personer:', error);
-      handleApiError(error);
-    }
-  };
-
-  const fetchInventory = async () => {
-    try {
-      const response = await api.get('/inventory');
-      setInventory(response.data);
-    } catch (error) {
-      console.error('Feil ved henting av inventar:', error);
       handleApiError(error);
     }
   };
@@ -102,7 +88,6 @@ const BeverageApp = () => {
         beverageType: selectedBeverageType
       });
       fetchPeople();
-      fetchInventory();
       closeBeverageDialog();
     } catch (error) {
       console.error('Feil ved oppdatering av drikke:', error);
@@ -143,7 +128,6 @@ const BeverageApp = () => {
       await api.post('/quickbuy', { beverageType: selectedBeverageType });
       setShowQuickBuyDialog(false);
       fetchPeople();
-      fetchInventory();
       fetchTransactions();
     } catch (error) {
       console.error('Feil ved hurtigkjøp:', error);
@@ -208,25 +192,6 @@ const BeverageApp = () => {
     }
   };
 
-  const openInventoryDialog = () => {
-    setShowInventoryDialog(true);
-  };
-
-  const closeInventoryDialog = () => {
-    setShowInventoryDialog(false);
-    setNewInventoryItem({ beverageType: '', quantity: 0 });
-  };
-
-  const updateInventory = async () => {
-    try {
-      await api.post('/inventory/update', newInventoryItem);
-      fetchInventory();
-      closeInventoryDialog();
-    } catch (error) {
-      console.error('Feil ved oppdatering av inventar:', error);
-      handleApiError(error);
-    }
-  };
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -256,9 +221,6 @@ const BeverageApp = () => {
         <Link to="/dashboard" className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block">
           <BarChart2 className="inline-block mr-1" /> Dashboard
         </Link>
-        <button onClick={openInventoryDialog} className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded">
-          <Package className="inline-block mr-1" /> Administrer inventar
-        </button>
       </div>
       {isCoffeeMode ? (
         <div>
@@ -289,11 +251,14 @@ const BeverageApp = () => {
           </ul>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {people.map((person) => (
-            <li key={person.id} className="flex items-center justify-between bg-white shadow-md rounded-lg p-4">
-              <span className="font-semibold">{person.name}: {person.beverages} {person.beverage_type}</span>
-              <div className="space-x-2">
+            <div key={person.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col justify-between">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
+                <p>{person.beverages} {person.beverage_type}</p>
+              </div>
+              <div className="mt-4 flex justify-between">
                 <button
                   onClick={() => openBeverageDialog(person, 'add')}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
@@ -318,9 +283,9 @@ const BeverageApp = () => {
                   </button>
                 )}
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
       {showTransactions && (
         <div className="mt-4">
@@ -456,50 +421,6 @@ const BeverageApp = () => {
           </div>
         </div>
       )}
-      {showInventoryDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Administrer inventar</h2>
-            <div className="mb-4">
-              <label className="block mb-2">Drikketype:</label>
-              <input
-                type="text"
-                value={newInventoryItem.beverageType}
-                onChange={(e) => setNewInventoryItem({ ...newInventoryItem, beverageType: e.target.value })}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2">Antall:</label>
-              <input
-                type="number"
-                value={newInventoryItem.quantity}
-                onChange={(e) => setNewInventoryItem({ ...newInventoryItem, quantity: parseInt(e.target.value) })}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div className="flex justify-end">
-              <button onClick={closeInventoryDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
-                Avbryt
-              </button>
-              <button onClick={updateInventory} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
-                Oppdater inventar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Inventar</h2>
-        <ul className="space-y-2">
-          {inventory.map((item) => (
-            <li key={item.beverage_type} className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center">
-              <span className="font-semibold">{item.beverage_type}</span>
-              <span>{item.quantity} på lager</span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 };
