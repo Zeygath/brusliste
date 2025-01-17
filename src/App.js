@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
-import { Package } from 'react-bootstrap-icons';
+import { Package } from 'lucide-react';
 import InventoryManagement from './InventoryManagement';
 
 function BeverageApp() {
