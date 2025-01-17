@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
+import BeverageApp from './BeverageApp';
 import { Package } from 'lucide-react';
 import InventoryManagement from './InventoryManagement';
 
-function BeverageApp() {
+function App() {
   return (
     <Router>
       <div className="container mx-auto p-4">
@@ -19,7 +20,7 @@ function BeverageApp() {
         </nav>
 
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<BeverageApp />} />
           <Route path="/inventory" element={<InventoryManagement />} />
         </Routes>
       </div>
@@ -36,5 +37,5 @@ function Home() {
   );
 }
 
-export default BeverageApp;
+export default App;
 
