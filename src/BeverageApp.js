@@ -229,91 +229,95 @@ const BeverageApp = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Brusliste</h1>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6 text-center">Brusliste</h1>
       <div className="mb-4">
         <input
           type="text"
           value={newPersonName}
           onChange={(e) => setNewPersonName(e.target.value)}
           placeholder="Nytt navn"
-          className="border p-2 mr-2"
+          className="border border-gray-300 p-2 mr-2 rounded"
         />
-        <button onClick={addPerson} className="bg-blue-500 text-white p-2 rounded">
+        <button onClick={addPerson} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
           <UserPlus className="inline-block mr-1" /> Legg til person
         </button>
       </div>
-      <div className="mb-4">
-        <button onClick={() => setShowQuickBuyDialog(true)} className="bg-green-500 text-white p-2 rounded mr-2">
+      <div className="mb-6 flex flex-wrap gap-2">
+        <button onClick={() => setShowQuickBuyDialog(true)} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
           <Zap className="inline-block mr-1" /> Hurtigkjøp
         </button>
-        <button onClick={fetchTransactions} className="bg-yellow-500 text-white p-2 rounded mr-2">
+        <button onClick={fetchTransactions} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
           <ClipboardList className="inline-block mr-1" /> Vis transaksjoner
         </button>
-        <button onClick={() => setIsCoffeeMode(!isCoffeeMode)} className="bg-brown-500 text-white p-2 rounded mr-2">
+        <button onClick={() => setIsCoffeeMode(!isCoffeeMode)} className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-2 px-4 rounded">
           <Coffee className="inline-block mr-1" /> {isCoffeeMode ? 'Brus modus' : 'Kaffe modus'}
         </button>
-        <Link to="/dashboard" className="bg-purple-500 text-white p-2 rounded inline-block">
+        <Link to="/dashboard" className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block">
           <BarChart2 className="inline-block mr-1" /> Dashboard
         </Link>
-        <button onClick={openInventoryDialog} className="bg-indigo-500 text-white p-2 rounded ml-2">
+        <button onClick={openInventoryDialog} className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded">
           <Package className="inline-block mr-1" /> Administrer inventar
         </button>
       </div>
       {isCoffeeMode ? (
         <div>
           <h2 className="text-2xl font-bold mb-2">Kaffe forbruk</h2>
-          <ul>
+          <ul className="space-y-4">
             {coffeeData.map((person) => (
-              <li key={person.id} className="mb-2">
-                {person.name}: {person.coffee_balance} kopper
-                <button
-                  onClick={() => handleCoffeeConsumption(person)}
-                  className="bg-brown-500 text-white p-1 rounded ml-2"
-                >
-                  Drikk en kopp
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedPerson(person);
-                    setShowCoffeePurchaseDialog(true);
-                  }}
-                  className="bg-green-500 text-white p-1 rounded ml-2"
-                >
-                  Kjøp kaffe
-                </button>
+              <li key={person.id} className="mb-2 flex items-center">
+                <span className="font-semibold">{person.name}: {person.coffee_balance} kopper</span>
+                <div className="ml-4 space-x-2">
+                  <button
+                    onClick={() => handleCoffeeConsumption(person)}
+                    className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-1 px-2 rounded"
+                  >
+                    Drikk en kopp
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedPerson(person);
+                      setShowCoffeePurchaseDialog(true);
+                    }}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                  >
+                    Kjøp kaffe
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </div>
       ) : (
-        <ul>
+        <ul className="space-y-4">
           {people.map((person) => (
-            <li key={person.id} className="mb-2">
-              {person.name}: {person.beverages} {person.beverage_type}
-              <button
-                onClick={() => openBeverageDialog(person, 'add')}
-                className="bg-green-500 text-white p-1 rounded ml-2"
-              >
-                <PlusCircle className="inline-block mr-1" /> Legg til
-              </button>
-              <button
-                onClick={() => openBeverageDialog(person, 'remove')}
-                className="bg-red-500 text-white p-1 rounded ml-2"
-              >
-                <MinusCircle className="inline-block mr-1" /> Fjern
-              </button>
-              {person.beverages > 0 && (
+            <li key={person.id} className="flex items-center justify-between bg-white shadow-md rounded-lg p-4">
+              <span className="font-semibold">{person.name}: {person.beverages} {person.beverage_type}</span>
+              <div className="space-x-2">
                 <button
-                  onClick={() => {
-                    setPayingPerson(person);
-                    setShowPaymentDialog(true);
-                  }}
-                  className="bg-blue-500 text-white p-1 rounded ml-2"
+                  onClick={() => openBeverageDialog(person, 'add')}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
                 >
-                  <ShoppingCart className="inline-block mr-1" /> Betal
+                  <PlusCircle className="inline-block mr-1" /> Legg til
                 </button>
-              )}
+                <button
+                  onClick={() => openBeverageDialog(person, 'remove')}
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
+                >
+                  <MinusCircle className="inline-block mr-1" /> Fjern
+                </button>
+                {person.beverages > 0 && (
+                  <button
+                    onClick={() => {
+                      setPayingPerson(person);
+                      setShowPaymentDialog(true);
+                    }}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
+                  >
+                    <ShoppingCart className="inline-block mr-1" /> Betal
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -321,26 +325,25 @@ const BeverageApp = () => {
       {showTransactions && (
         <div className="mt-4">
           <h2 className="text-2xl font-bold mb-2">Transaksjoner</h2>
-          <ul>
+          <ul className="space-y-2">
             {transactions.map((transaction) => (
-              <li key={transaction.id} className="mb-1">
-                {transaction.name || 'Hurtigkjøp'} - {transaction.type}: {transaction.beverages} {transaction.beverage_type} (
-                {formatAmount(transaction.amount)} kr)
+              <li key={transaction.id} className="bg-white shadow-md rounded-lg p-4">
+                <span className="font-semibold">{transaction.name || 'Hurtigkjøp'} - {transaction.type}: {transaction.beverages} {transaction.beverage_type} ({formatAmount(transaction.amount)} kr)</span>
               </li>
             ))}
           </ul>
         </div>
       )}
       {showPaymentDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Bekreft betaling</h2>
-            <p>
-              {payingPerson.name} betaler {payingPerson.beverages * PRICE_PER_BEVERAGE} kr for {payingPerson.beverages}{' '}
+            <p className="mb-4">
+              {payingPerson.name} skal betale {payingPerson.beverages * PRICE_PER_BEVERAGE} kr for {payingPerson.beverages}{' '}
               {payingPerson.beverage_type}.
             </p>
-            <div className="flex justify-end mt-4">
-              <button onClick={() => setShowPaymentDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">
+            <div className="flex justify-end">
+              <button onClick={() => setShowPaymentDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
                 Avbryt
               </button>
               <button
@@ -354,7 +357,7 @@ const BeverageApp = () => {
                     handleApiError(error);
                   }
                 }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
               >
                 Bekreft betaling
               </button>
@@ -363,7 +366,7 @@ const BeverageApp = () => {
         </div>
       )}
       {showQuickBuyDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Hurtigkjøp</h2>
             <select
@@ -373,12 +376,14 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Fanta">Fanta</option>
+              <option value="Sprite">Sprite</option>
             </select>
             <div className="flex justify-end">
-              <button onClick={() => setShowQuickBuyDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">
+              <button onClick={() => setShowQuickBuyDialog(false)} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
                 Avbryt
               </button>
-              <button onClick={quickBuy} className="px-4 py-2 bg-green-500 text-white rounded-md">
+              <button onClick={quickBuy} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                 Bekreft kjøp
               </button>
             </div>
@@ -386,7 +391,7 @@ const BeverageApp = () => {
         </div>
       )}
       {showBeverageDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">
               {selectedAction === 'add' ? 'Legg til drikke' : 'Fjern drikke'}
@@ -398,12 +403,14 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Fanta">Fanta</option>
+              <option value="Sprite">Sprite</option>
             </select>
             <div className="flex justify-end">
-              <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">
+              <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
                 Avbryt
               </button>
-              <button onClick={confirmBeverageUpdate} className="px-4 py-2 bg-green-500 text-white rounded-md">
+              <button onClick={confirmBeverageUpdate} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                 Bekreft
               </button>
             </div>
@@ -411,7 +418,7 @@ const BeverageApp = () => {
         </div>
       )}
       {showCoffeePurchaseDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Registrer kjøp av kaffepose</h2>
             <div className="mb-4">
@@ -438,11 +445,11 @@ const BeverageApp = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => setShowCoffeePurchaseDialog(false)}
-                className="mr-2 px-4 py-2 bg-gray-200 rounded-md"
+                className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
               >
                 Avbryt
               </button>
-              <button onClick={handleCoffeePurchase} className="px-4 py-2 bg-green-500 text-white rounded-md">
+              <button onClick={handleCoffeePurchase} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                 Bekreft kjøp
               </button>
             </div>
@@ -450,9 +457,9 @@ const BeverageApp = () => {
         </div>
       )}
       {showInventoryDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Administrer lager</h2>
+            <h2 className="text-xl font-bold mb-4">Administrer inventar</h2>
             <div className="mb-4">
               <label className="block mb-2">Drikketype:</label>
               <input
@@ -472,22 +479,23 @@ const BeverageApp = () => {
               />
             </div>
             <div className="flex justify-end">
-              <button onClick={closeInventoryDialog} className="mr-2 px-4 py-2 bg-gray-200 rounded-md">
+              <button onClick={closeInventoryDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
                 Avbryt
               </button>
-              <button onClick={updateInventory} className="px-4 py-2 bg-green-500 text-white rounded-md">
-                Oppdater lager
+              <button onClick={updateInventory} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
+                Oppdater inventar
               </button>
             </div>
           </div>
         </div>
       )}
-      <div className="mt-4">
-        <h2 className="text-2xl font-bold mb-2">Lager</h2>
-        <ul>
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Inventar</h2>
+        <ul className="space-y-2">
           {inventory.map((item) => (
-            <li key={item.beverage_type} className="mb-1">
-              {item.beverage_type}: {item.quantity} på lager
+            <li key={item.beverage_type} className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center">
+              <span className="font-semibold">{item.beverage_type}</span>
+              <span>{item.quantity} på lager</span>
             </li>
           ))}
         </ul>
