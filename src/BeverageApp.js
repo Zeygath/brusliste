@@ -485,7 +485,7 @@ const BeverageApp = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
                 <p>
-                  {payingPerson.beverages * PRICE_PER_BEVERAGE} kr ({payingPerson.beverages * PRICE_PER_BEVERAGE} brus)
+                  {payingPerson.beverages} * {PRICE_PER_BEVERAGE} kr ({payingPerson.beverages} brus)
                 </p>
               </div>
               <div className="mt-4 flex justify-between items-center">
