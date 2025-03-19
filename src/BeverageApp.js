@@ -138,9 +138,9 @@ const BeverageApp = () => {
 
   // Modified to use a sequential approach with visual feedback
   const confirmBeverageUpdate = async () => {
+    const operationKey = `beverage-${selectedPerson.id}-${Date.now()}`
     try {
       const beverages = selectedAction === "add" ? 1 : -1
-      const operationKey = `beverage-${selectedPerson.id}-${Date.now()}`
 
       // Close dialog immediately for better UX
       closeBeverageDialog()
@@ -216,12 +216,12 @@ const BeverageApp = () => {
   }
 
   const quickBuy = async () => {
+    const operationKey = `quickbuy-${Date.now()}`
     try {
       // Close dialog immediately for better UX
       setShowQuickBuyDialog(false)
 
       // Show loading state
-      const operationKey = `quickbuy-${Date.now()}`
       setPendingOperations((prev) => ({
         ...prev,
         [operationKey]: true,
@@ -246,9 +246,8 @@ const BeverageApp = () => {
   }
 
   const handleCoffeeConsumption = async (person) => {
+    const operationKey = `coffee-${person.id}-${Date.now()}`
     try {
-      const operationKey = `coffee-${person.id}-${Date.now()}`
-
       // Show loading state
       setPendingOperations((prev) => ({
         ...prev,
@@ -278,11 +277,10 @@ const BeverageApp = () => {
   }
 
   const handleCoffeePurchase = async () => {
+    const operationKey = `coffee-purchase-${selectedPerson.id}-${Date.now()}`
     try {
       // Close dialog immediately for better UX
       setShowCoffeePurchaseDialog(false)
-
-      const operationKey = `coffee-purchase-${selectedPerson.id}-${Date.now()}`
 
       // Show loading state
       setPendingOperations((prev) => ({
@@ -341,11 +339,10 @@ const BeverageApp = () => {
   }
 
   const handleDeleteUser = async (userId) => {
+    const operationKey = `delete-user-${userId}`
     try {
       // Close dropdown immediately for better UX
       setShowDropdown(null)
-
-      const operationKey = `delete-user-${userId}`
 
       // Show loading state
       setPendingOperations((prev) => ({
@@ -372,11 +369,10 @@ const BeverageApp = () => {
   }
 
   const handlePayment = async (person) => {
+    const operationKey = `payment-${person.id}`
     try {
       // Close dialog immediately for better UX
       setShowPaymentDialog(false)
-
-      const operationKey = `payment-${person.id}`
 
       // Show loading state
       setPendingOperations((prev) => ({
@@ -624,7 +620,7 @@ const BeverageApp = () => {
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
             </select>
-            <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>
+            <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>            
             <div className="flex justify-end">
               <button
                 onClick={() => setShowQuickBuyDialog(false)}
