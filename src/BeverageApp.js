@@ -373,7 +373,7 @@ const BeverageApp = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
                 <p>
-                  {person.beverages} {person.beverage_type}
+                  {person.beverages * PRICE_PER_BEVERAGE} kr ({person.beverages} brus)
                 </p>
               </div>
               <div className="mt-4 flex justify-between items-center">
@@ -486,8 +486,6 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
-              <option value="Fanta">Fanta</option>
-              <option value="Sprite">Sprite</option>
             </select>
             <div className="flex justify-end">
               <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
