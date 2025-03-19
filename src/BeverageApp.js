@@ -298,21 +298,17 @@ const BeverageApp = () => {
         <button
           onClick={fetchTransactions}
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+          disabled
         >
           <ClipboardList className="inline-block mr-1" /> Vis transaksjoner
         </button>
         <button
           onClick={() => setIsCoffeeMode(!isCoffeeMode)}
           className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-2 px-4 rounded"
+          disabled
         >
           <Coffee className="inline-block mr-1" /> {isCoffeeMode ? "Brus modus" : "Kaffe modus"}
         </button>
-        <Link
-          to="/dashboard"
-          className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block"
-        >
-          <BarChart2 className="inline-block mr-1" /> Dashboard
-        </Link>
       </div>
       {isCoffeeMode ? (
         <div>
