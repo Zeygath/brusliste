@@ -155,7 +155,6 @@ const BeverageApp = () => {
       await api.post("/people", {
         name: selectedPerson.name,
         beverages,
-        beverageType: selectedBeverageType,
       })
 
       // Update UI after backend confirms
@@ -186,7 +185,7 @@ const BeverageApp = () => {
         await api.post("/people", {
           name: nameToAdd,
           beverages: 0,
-          beverageType: "Cola",
+          beverageType: "Cola Zero",
         })
 
         // Update UI after backend confirms
