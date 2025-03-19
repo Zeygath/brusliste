@@ -67,7 +67,6 @@ const BeverageApp = () => {
   const [currentLocation, setCurrentLocation] = useState(null)
   const [showLocationDialog, setShowLocationDialog] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [pendingOperations, setPendingOperations] = useState({})
 
   useEffect(() => {
     fetchPeople()
@@ -133,66 +132,74 @@ const BeverageApp = () => {
     setShowBeverageDialog(false)
     setSelectedPerson(null)
     setSelectedAction(null)
-    setSelectedBeverageType("Cola")
   }
 
-  // Modified to use a sequential approach with visual feedback
   const confirmBeverageUpdate = async () => {
-    const operationKey = `beverage-${selectedPerson.id}-${Date.now()}`
     try {
       const beverages = selectedAction === "add" ? 1 : -1
 
-      // Close dialog immediately for better UX
-      closeBeverageDialog()
+      // Optimistic UI update
+      const updatedPeople = people.map((p) => {
+        if (p.id === selectedPerson.id) {
+          return {
+            ...p,
+            beverages: p.beverages + beverages,
+            beverage_type: selectedBeverageType,
+          }
+        }
+        return p
+      })
 
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
+      setPeople(updatedPeople)
+      closeBeverageDialog()
 
       // Send request to backend
       await api.post("/people", {
         name: selectedPerson.name,
         beverages,
+        beverageType: selectedBeverageType,
       })
 
-      // Update UI after backend confirms
+      // Refresh data in the background to ensure consistency
       fetchPeople()
     } catch (error) {
       console.error("Feil ved oppdatering av drikke:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
+      // Revert optimistic update on error
+      fetchPeople()
     }
   }
 
   const addPerson = async () => {
-    if (newPersonName.trim() && !isLoading) {
+    if (newPersonName.trim()) {
       try {
         setIsLoading(true)
 
-        // Clear input immediately for better UX
-        const nameToAdd = newPersonName
+        // Optimistic UI update
+        const newPerson = {
+          id: `temp-${Date.now()}`, // Temporary ID
+          name: newPersonName,
+          beverages: 0,
+          beverage_type: "Cola",
+        }
+
+        setPeople([...people, newPerson])
         setNewPersonName("")
 
         // Send request to backend
         await api.post("/people", {
-          name: nameToAdd,
+          name: newPersonName,
           beverages: 0,
-          beverageType: "Cola Zero",
+          beverageType: "Cola",
         })
 
-        // Update UI after backend confirms
+        // Refresh data to get the real ID
         fetchPeople()
       } catch (error) {
         console.error("Feil ved tillegg av person:", error)
         handleApiError(error)
+        // Revert optimistic update
+        fetchPeople()
       } finally {
         setIsLoading(false)
       }
@@ -215,43 +222,36 @@ const BeverageApp = () => {
   }
 
   const quickBuy = async () => {
-    const operationKey = `quickbuy-${Date.now()}`
     try {
-      // Close dialog immediately for better UX
+      // Optimistic UI update - we don't update the UI here since quickbuy
+      // doesn't directly affect the people list, but we close the dialog immediately
       setShowQuickBuyDialog(false)
-
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
 
       // Send request to backend
       await api.post("/quickbuy", { beverageType: selectedBeverageType })
 
-      // Update UI after backend confirms
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved hurtigkjøp:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
     }
   }
 
   const handleCoffeeConsumption = async (person) => {
-    const operationKey = `coffee-${person.id}-${Date.now()}`
     try {
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
+      // Optimistic UI update
+      const updatedCoffeeData = coffeeData.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            coffee_balance: p.coffee_balance + 1,
+          }
+        }
+        return p
+      })
+
+      setCoffeeData(updatedCoffeeData)
 
       // Send request to backend
       await api.post("/coffee-tracker", {
@@ -260,32 +260,23 @@ const BeverageApp = () => {
         coffeePurchased: 0,
       })
 
-      // Update UI after backend confirms
+      // Refresh data in the background
       fetchCoffeeData()
     } catch (error) {
       console.error("Feil ved oppdatering av kaffeforbruk:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
+      // Revert optimistic update
+      fetchCoffeeData()
     }
   }
 
   const handleCoffeePurchase = async () => {
-    const operationKey = `coffee-purchase-${selectedPerson.id}-${Date.now()}`
     try {
-      // Close dialog immediately for better UX
+      // Optimistic UI update
       setShowCoffeePurchaseDialog(false)
 
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
+      // We don't update the coffee data optimistically here because
+      // the calculation is complex and depends on backend logic
 
       // Send request to backend
       await api.post("/coffee-tracker", {
@@ -302,13 +293,6 @@ const BeverageApp = () => {
     } catch (error) {
       console.error("Feil ved registrering av kaffekjøp:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
     }
   }
 
@@ -338,72 +322,56 @@ const BeverageApp = () => {
   }
 
   const handleDeleteUser = async (userId) => {
-    const operationKey = `delete-user-${userId}`
     try {
-      // Close dropdown immediately for better UX
+      // Optimistic UI update
+      setPeople(people.filter((person) => person.id !== userId))
       setShowDropdown(null)
-
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
 
       // Send request to backend
       await api.delete(`/people/${userId}`)
 
-      // Update UI after backend confirms
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved sletting av bruker:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
+      // Revert optimistic update
+      fetchPeople()
     }
   }
 
   const handlePayment = async (person) => {
-    const operationKey = `payment-${person.id}`
     try {
-      // Close dialog immediately for better UX
+      // Optimistic UI update
       setShowPaymentDialog(false)
 
-      // Show loading state
-      setPendingOperations((prev) => ({
-        ...prev,
-        [operationKey]: true,
-      }))
+      const updatedPeople = people.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            beverages: 0,
+          }
+        }
+        return p
+      })
+
+      setPeople(updatedPeople)
 
       // Send request to backend
       await api.post(`/people/${person.id}/pay`)
 
-      // Update UI after backend confirms
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved betaling:", error)
       handleApiError(error)
-    } finally {
-      // Clear loading state
-      setPendingOperations((prev) => {
-        const newState = { ...prev }
-        delete newState[operationKey]
-        return newState
-      })
+      // Revert optimistic update
+      fetchPeople()
     }
   }
 
   const toggleDropdown = (personId) => {
     setShowDropdown(showDropdown === personId ? null : personId)
-  }
-
-  // Helper to check if an operation is pending for a specific person
-  const isPersonLoading = (personId) => {
-    return Object.keys(pendingOperations).some((key) => key.includes(`-${personId}-`) || key.includes(`-${personId}`))
   }
 
   return (
@@ -432,16 +400,10 @@ const BeverageApp = () => {
         />
         <button
           onClick={addPerson}
-          className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
           disabled={isLoading || !newPersonName.trim()}
         >
-          {isLoading ? (
-            "Legger til..."
-          ) : (
-            <>
-              <UserPlus className="inline-block mr-1" /> Legg til person
-            </>
-          )}
+          <UserPlus className="inline-block mr-1" /> Legg til person
         </button>
       </div>
       <div className="mb-6 flex flex-wrap gap-2">
@@ -482,8 +444,7 @@ const BeverageApp = () => {
                 <div className="ml-4 space-x-2">
                   <button
                     onClick={() => handleCoffeeConsumption(person)}
-                    className={`bg-brown-500 hover:bg-brown-600 text-white font-bold py-1 px-2 rounded ${isPersonLoading(person.id) ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={isPersonLoading(person.id)}
+                    className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-1 px-2 rounded"
                   >
                     Drikk en kopp
                   </button>
@@ -492,8 +453,7 @@ const BeverageApp = () => {
                       setSelectedPerson(person)
                       setShowCoffeePurchaseDialog(true)
                     }}
-                    className={`bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded ${isPersonLoading(person.id) ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={isPersonLoading(person.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
                   >
                     Kjøp kaffe
                   </button>
@@ -505,15 +465,11 @@ const BeverageApp = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {people.map((person) => (
-            <div
-              key={person.id}
-              className={`bg-white shadow-md rounded-lg p-4 flex flex-col justify-between relative ${isPersonLoading(person.id) ? "opacity-75" : ""}`}
-            >
+            <div key={person.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col justify-between relative">
               <div className="absolute top-2 right-2">
                 <button
                   onClick={() => toggleDropdown(person.id)}
                   className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                  disabled={isPersonLoading(person.id)}
                 >
                   <MoreVertical size={20} />
                 </button>
@@ -545,8 +501,7 @@ const BeverageApp = () => {
               <div className="mt-4 flex justify-between items-center">
                 <button
                   onClick={() => openBeverageDialog(person, "add")}
-                  className={`bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex-grow mr-2 ${isPersonLoading(person.id) ? "opacity-50 cursor-not-allowed" : ""}`}
-                  disabled={isPersonLoading(person.id)}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex-grow mr-2"
                 >
                   <PlusCircle className="inline-block mr-1" /> Legg til
                 </button>
@@ -556,8 +511,7 @@ const BeverageApp = () => {
                       setPayingPerson(person)
                       setShowPaymentDialog(true)
                     }}
-                    className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex-shrink-0 ${isPersonLoading(person.id) ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={isPersonLoading(person.id)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex-shrink-0"
                   >
                     <ShoppingCart className="inline-block mr-1" /> Betal
                   </button>
@@ -618,8 +572,9 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Fanta">Fanta</option>
+              <option value="Sprite">Sprite</option>
             </select>
-            <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>            
             <div className="flex justify-end">
               <button
                 onClick={() => setShowQuickBuyDialog(false)}
@@ -645,6 +600,8 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Fanta">Fanta</option>
+              <option value="Sprite">Sprite</option>
             </select>
             <div className="flex justify-end">
               <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
