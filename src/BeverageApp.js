@@ -66,6 +66,7 @@ const BeverageApp = () => {
   const [locations, setLocations] = useState([])
   const [currentLocation, setCurrentLocation] = useState(null)
   const [showLocationDialog, setShowLocationDialog] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     fetchPeople()
@@ -137,28 +138,71 @@ const BeverageApp = () => {
   const confirmBeverageUpdate = async () => {
     try {
       const beverages = selectedAction === "add" ? 1 : -1
+
+      // Optimistic UI update
+      const updatedPeople = people.map((p) => {
+        if (p.id === selectedPerson.id) {
+          return {
+            ...p,
+            beverages: p.beverages + beverages,
+            beverage_type: selectedBeverageType,
+          }
+        }
+        return p
+      })
+
+      setPeople(updatedPeople)
+      closeBeverageDialog()
+
+      // Send request to backend
       await api.post("/people", {
         name: selectedPerson.name,
         beverages,
         beverageType: selectedBeverageType,
       })
+
+      // Refresh data in the background to ensure consistency
       fetchPeople()
-      closeBeverageDialog()
     } catch (error) {
       console.error("Feil ved oppdatering av drikke:", error)
       handleApiError(error)
+      // Revert optimistic update on error
+      fetchPeople()
     }
   }
 
   const addPerson = async () => {
     if (newPersonName.trim()) {
       try {
-        await api.post("/people", { name: newPersonName, beverages: 0, beverageType: "Cola" })
+        setIsLoading(true)
+
+        // Optimistic UI update
+        const newPerson = {
+          id: `temp-${Date.now()}`, // Temporary ID
+          name: newPersonName,
+          beverages: 0,
+          beverage_type: "Cola",
+        }
+
+        setPeople([...people, newPerson])
         setNewPersonName("")
+
+        // Send request to backend
+        await api.post("/people", {
+          name: newPersonName,
+          beverages: 0,
+          beverageType: "Cola",
+        })
+
+        // Refresh data to get the real ID
         fetchPeople()
       } catch (error) {
         console.error("Feil ved tillegg av person:", error)
         handleApiError(error)
+        // Revert optimistic update
+        fetchPeople()
+      } finally {
+        setIsLoading(false)
       }
     }
   }
@@ -180,10 +224,15 @@ const BeverageApp = () => {
 
   const quickBuy = async () => {
     try {
-      await api.post("/quickbuy", { beverageType: selectedBeverageType })
+      // Optimistic UI update - we don't update the UI here since quickbuy
+      // doesn't directly affect the people list, but we close the dialog immediately
       setShowQuickBuyDialog(false)
+
+      // Send request to backend
+      await api.post("/quickbuy", { beverageType: selectedBeverageType })
+
+      // Refresh data in the background
       fetchPeople()
-      fetchTransactions()
     } catch (error) {
       console.error("Feil ved hurtigkjøp:", error)
       handleApiError(error)
@@ -192,30 +241,56 @@ const BeverageApp = () => {
 
   const handleCoffeeConsumption = async (person) => {
     try {
+      // Optimistic UI update
+      const updatedCoffeeData = coffeeData.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            coffee_balance: p.coffee_balance + 1,
+          }
+        }
+        return p
+      })
+
+      setCoffeeData(updatedCoffeeData)
+
+      // Send request to backend
       await api.post("/coffee-tracker", {
         userId: person.id,
         cupsConsumed: 1,
         coffeePurchased: 0,
       })
+
+      // Refresh data in the background
       fetchCoffeeData()
     } catch (error) {
       console.error("Feil ved oppdatering av kaffeforbruk:", error)
       handleApiError(error)
+      // Revert optimistic update
+      fetchCoffeeData()
     }
   }
 
   const handleCoffeePurchase = async () => {
     try {
+      // Optimistic UI update
+      setShowCoffeePurchaseDialog(false)
+
+      // We don't update the coffee data optimistically here because
+      // the calculation is complex and depends on backend logic
+
+      // Send request to backend
       await api.post("/coffee-tracker", {
         userId: selectedPerson.id,
         cupsConsumed: 0,
         coffeePurchased: coffeeCost,
         coffeeBags: coffeeBags,
       })
-      fetchCoffeeData()
-      setShowCoffeePurchaseDialog(false)
+
+      // Reset state and refresh data
       setCoffeeBags(1)
       setCoffeeCost(0)
+      fetchCoffeeData()
     } catch (error) {
       console.error("Feil ved registrering av kaffekjøp:", error)
       handleApiError(error)
@@ -249,11 +324,50 @@ const BeverageApp = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
+      // Optimistic UI update
+      setPeople(people.filter((person) => person.id !== userId))
+      setShowDropdown(null)
+
+      // Send request to backend
       await api.delete(`/people/${userId}`)
+
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved sletting av bruker:", error)
       handleApiError(error)
+      // Revert optimistic update
+      fetchPeople()
+    }
+  }
+
+  const handlePayment = async (person) => {
+    try {
+      // Optimistic UI update
+      setShowPaymentDialog(false)
+
+      const updatedPeople = people.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            beverages: 0,
+          }
+        }
+        return p
+      })
+
+      setPeople(updatedPeople)
+
+      // Send request to backend
+      await api.post(`/people/${person.id}/pay`)
+
+      // Refresh data in the background
+      fetchPeople()
+    } catch (error) {
+      console.error("Feil ved betaling:", error)
+      handleApiError(error)
+      // Revert optimistic update
+      fetchPeople()
     }
   }
 
@@ -283,8 +397,13 @@ const BeverageApp = () => {
           onChange={(e) => setNewPersonName(e.target.value)}
           placeholder="Nytt navn"
           className="border border-gray-300 p-2 mr-2 rounded"
+          disabled={isLoading}
         />
-        <button onClick={addPerson} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        <button
+          onClick={addPerson}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          disabled={isLoading || !newPersonName.trim()}
+        >
           <UserPlus className="inline-block mr-1" /> Legg til person
         </button>
       </div>
@@ -298,17 +417,10 @@ const BeverageApp = () => {
         <button
           onClick={fetchTransactions}
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-          disabled
         >
           <ClipboardList className="inline-block mr-1" /> Vis transaksjoner
         </button>
-        <button
-          onClick={() => setIsCoffeeMode(!isCoffeeMode)}
-          className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-2 px-4 rounded"
-          disabled
-        >
-          <Coffee className="inline-block mr-1" /> {isCoffeeMode ? "Brus modus" : "Kaffe modus"}
-        </button>
+
       </div>
       {isCoffeeMode ? (
         <div>
@@ -373,7 +485,7 @@ const BeverageApp = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
                 <p>
-                  {person.beverages * PRICE_PER_BEVERAGE} kr ({person.beverages} brus)
+                  {payingPerson.beverages * PRICE_PER_BEVERAGE} kr ({payingPerson.beverages * PRICE_PER_BEVERAGE} brus)
                 </p>
               </div>
               <div className="mt-4 flex justify-between items-center">
@@ -430,16 +542,7 @@ const BeverageApp = () => {
                 Avbryt
               </button>
               <button
-                onClick={async () => {
-                  try {
-                    await api.post(`/people/${payingPerson.id}/pay`)
-                    setShowPaymentDialog(false)
-                    fetchPeople()
-                  } catch (error) {
-                    console.error("Feil ved betaling:", error)
-                    handleApiError(error)
-                  }
-                }}
+                onClick={() => handlePayment(payingPerson)}
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
               >
                 Bekreft betaling
