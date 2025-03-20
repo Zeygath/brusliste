@@ -67,7 +67,6 @@ const BeverageApp = () => {
   const [currentLocation, setCurrentLocation] = useState(null)
   const [showLocationDialog, setShowLocationDialog] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     fetchPeople()
@@ -136,27 +135,38 @@ const BeverageApp = () => {
   }
 
   const confirmBeverageUpdate = async () => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
       const beverages = selectedAction === "add" ? 1 : -1
 
-      // Send request to backend first
+      // Optimistic UI update
+      const updatedPeople = people.map((p) => {
+        if (p.id === selectedPerson.id) {
+          return {
+            ...p,
+            beverages: p.beverages + beverages,
+            beverage_type: selectedBeverageType,
+          }
+        }
+        return p
+      })
+
+      setPeople(updatedPeople)
+      closeBeverageDialog()
+
+      // Send request to backend
       await api.post("/people", {
         name: selectedPerson.name,
         beverages,
         beverageType: selectedBeverageType,
       })
 
-      // Update UI after backend confirms
-      closeBeverageDialog()
+      // Refresh data in the background to ensure consistency
       fetchPeople()
     } catch (error) {
       console.error("Feil ved oppdatering av drikke:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
+      // Revert optimistic update on error
+      fetchPeople()
     }
   }
 
@@ -164,21 +174,33 @@ const BeverageApp = () => {
     if (newPersonName.trim() && !isLoading) {
       try {
         setIsLoading(true)
-        const nameToAdd = newPersonName
+
+        // Optimistic UI update
+        const newPerson = {
+          id: `temp-${Date.now()}`, // Temporary ID
+          name: newPersonName,
+          beverages: 0,
+          beverage_type: "Cola",
+          location_id: getLocationId(),
+        }
+
+        setPeople([...people, newPerson])
         setNewPersonName("")
 
         // Send request to backend
         await api.post("/people", {
-          name: nameToAdd,
+          name: newPersonName,
           beverages: 0,
           beverageType: "Cola",
         })
 
-        // Update UI after backend confirms
+        // Refresh data to get the real ID
         fetchPeople()
       } catch (error) {
         console.error("Feil ved tillegg av person:", error)
         handleApiError(error)
+        // Revert optimistic update
+        fetchPeople()
       } finally {
         setIsLoading(false)
       }
@@ -201,30 +223,36 @@ const BeverageApp = () => {
   }
 
   const quickBuy = async () => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
+      // Optimistic UI update - we don't update the UI here since quickbuy
+      // doesn't directly affect the people list, but we close the dialog immediately
       setShowQuickBuyDialog(false)
 
       // Send request to backend
       await api.post("/quickbuy", { beverageType: selectedBeverageType })
 
-      // Refresh data
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved hurtigkjøp:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
     }
   }
 
   const handleCoffeeConsumption = async (person) => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
+      // Optimistic UI update
+      const updatedCoffeeData = coffeeData.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            coffee_balance: p.coffee_balance + 1,
+          }
+        }
+        return p
+      })
+
+      setCoffeeData(updatedCoffeeData)
 
       // Send request to backend
       await api.post("/coffee-tracker", {
@@ -233,22 +261,23 @@ const BeverageApp = () => {
         coffeePurchased: 0,
       })
 
-      // Refresh data
+      // Refresh data in the background
       fetchCoffeeData()
     } catch (error) {
       console.error("Feil ved oppdatering av kaffeforbruk:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
+      // Revert optimistic update
+      fetchCoffeeData()
     }
   }
 
   const handleCoffeePurchase = async () => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
+      // Optimistic UI update
       setShowCoffeePurchaseDialog(false)
+
+      // We don't update the coffee data optimistically here because
+      // the calculation is complex and depends on backend logic
 
       // Send request to backend
       await api.post("/coffee-tracker", {
@@ -265,8 +294,6 @@ const BeverageApp = () => {
     } catch (error) {
       console.error("Feil ved registrering av kaffekjøp:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
     }
   }
 
@@ -296,42 +323,51 @@ const BeverageApp = () => {
   }
 
   const handleDeleteUser = async (userId) => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
+      // Optimistic UI update
+      setPeople(people.filter((person) => person.id !== userId))
       setShowDropdown(null)
 
       // Send request to backend
       await api.delete(`/people/${userId}`)
 
-      // Refresh data
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved sletting av bruker:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
+      // Revert optimistic update
+      fetchPeople()
     }
   }
 
   const handlePayment = async (person) => {
-    if (isProcessing) return
-
     try {
-      setIsProcessing(true)
+      // Optimistic UI update
       setShowPaymentDialog(false)
+
+      const updatedPeople = people.map((p) => {
+        if (p.id === person.id) {
+          return {
+            ...p,
+            beverages: 0,
+          }
+        }
+        return p
+      })
+
+      setPeople(updatedPeople)
 
       // Send request to backend
       await api.post(`/people/${person.id}/pay`)
 
-      // Refresh data
+      // Refresh data in the background
       fetchPeople()
     } catch (error) {
       console.error("Feil ved betaling:", error)
       handleApiError(error)
-    } finally {
-      setIsProcessing(false)
+      // Revert optimistic update
+      fetchPeople()
     }
   }
 
@@ -375,7 +411,6 @@ const BeverageApp = () => {
         <button
           onClick={() => setShowQuickBuyDialog(true)}
           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-          disabled={isProcessing}
         >
           <Zap className="inline-block mr-1" /> Hurtigkjøp
         </button>
@@ -385,18 +420,7 @@ const BeverageApp = () => {
         >
           <ClipboardList className="inline-block mr-1" /> Vis transaksjoner
         </button>
-        <button
-          onClick={() => setIsCoffeeMode(!isCoffeeMode)}
-          className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-2 px-4 rounded"
-        >
-          <Coffee className="inline-block mr-1" /> {isCoffeeMode ? "Brus modus" : "Kaffe modus"}
-        </button>
-        <Link
-          to="/dashboard"
-          className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded inline-block"
-        >
-          <BarChart2 className="inline-block mr-1" /> Dashboard
-        </Link>
+
       </div>
       {isCoffeeMode ? (
         <div>
@@ -411,7 +435,6 @@ const BeverageApp = () => {
                   <button
                     onClick={() => handleCoffeeConsumption(person)}
                     className="bg-brown-500 hover:bg-brown-600 text-white font-bold py-1 px-2 rounded"
-                    disabled={isProcessing}
                   >
                     Drikk en kopp
                   </button>
@@ -421,7 +444,6 @@ const BeverageApp = () => {
                       setShowCoffeePurchaseDialog(true)
                     }}
                     className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
-                    disabled={isProcessing}
                   >
                     Kjøp kaffe
                   </button>
@@ -438,7 +460,6 @@ const BeverageApp = () => {
                 <button
                   onClick={() => toggleDropdown(person.id)}
                   className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                  disabled={isProcessing}
                 >
                   <MoreVertical size={20} />
                 </button>
@@ -447,7 +468,6 @@ const BeverageApp = () => {
                     <button
                       onClick={() => openBeverageDialog(person, "remove")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      disabled={isProcessing}
                     >
                       <MinusCircle className="inline-block mr-2" size={16} />
                       Fjern drikke
@@ -455,7 +475,6 @@ const BeverageApp = () => {
                     <button
                       onClick={() => handleDeleteUser(person.id)}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      disabled={isProcessing}
                     >
                       <Trash2 className="inline-block mr-2" size={16} />
                       Slett bruker
@@ -466,14 +485,13 @@ const BeverageApp = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">{person.name}</h3>
                 <p>
-                  {person.beverages} {person.beverage_type}
+                  {person.beverages * PRICE_PER_BEVERAGE} Kr. ({person.beverages} brus)
                 </p>
               </div>
               <div className="mt-4 flex justify-between items-center">
                 <button
                   onClick={() => openBeverageDialog(person, "add")}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex-grow mr-2"
-                  disabled={isProcessing}
                 >
                   <PlusCircle className="inline-block mr-1" /> Legg til
                 </button>
@@ -484,7 +502,6 @@ const BeverageApp = () => {
                       setShowPaymentDialog(true)
                     }}
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex-shrink-0"
-                    disabled={isProcessing}
                   >
                     <ShoppingCart className="inline-block mr-1" /> Betal
                   </button>
@@ -515,8 +532,9 @@ const BeverageApp = () => {
             <h2 className="text-xl font-bold mb-4">Bekreft betaling</h2>
             <p className="mb-4">
               {payingPerson.name} skal betale {payingPerson.beverages * PRICE_PER_BEVERAGE} kr for{" "}
-              {payingPerson.beverages} {payingPerson.beverage_type}.
+              {payingPerson.beverages} brus.
             </p>
+            <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowPaymentDialog(false)}
@@ -527,7 +545,6 @@ const BeverageApp = () => {
               <button
                 onClick={() => handlePayment(payingPerson)}
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
-                disabled={isProcessing}
               >
                 Bekreft betaling
               </button>
@@ -546,9 +563,8 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
-              <option value="Fanta">Fanta</option>
-              <option value="Sprite">Sprite</option>
             </select>
+            <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>            
             <div className="flex justify-end">
               <button
                 onClick={() => setShowQuickBuyDialog(false)}
@@ -556,11 +572,7 @@ const BeverageApp = () => {
               >
                 Avbryt
               </button>
-              <button
-                onClick={quickBuy}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                disabled={isProcessing}
-              >
+              <button onClick={quickBuy} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                 Bekreft kjøp
               </button>
             </div>
@@ -578,8 +590,6 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
-              <option value="Fanta">Fanta</option>
-              <option value="Sprite">Sprite</option>
             </select>
             <div className="flex justify-end">
               <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
@@ -588,7 +598,6 @@ const BeverageApp = () => {
               <button
                 onClick={confirmBeverageUpdate}
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                disabled={isProcessing}
               >
                 Bekreft
               </button>
@@ -631,7 +640,6 @@ const BeverageApp = () => {
               <button
                 onClick={handleCoffeePurchase}
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                disabled={isProcessing}
               >
                 Bekreft kjøp
               </button>
