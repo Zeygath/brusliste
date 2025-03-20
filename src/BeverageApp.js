@@ -222,6 +222,17 @@ const BeverageApp = () => {
     return Number(amount).toFixed(2)
   }
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('no-NO', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   const quickBuy = async () => {
     try {
       // Optimistic UI update - we don't update the UI here since quickbuy
@@ -512,18 +523,45 @@ const BeverageApp = () => {
         </div>
       )}
       {showTransactions && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-2">Transaksjoner</h2>
-          <ul className="space-y-2">
-            {transactions.map((transaction) => (
-              <li key={transaction.id} className="bg-white shadow-md rounded-lg p-4">
-                <span className="font-semibold">
-                  {transaction.name || "Hurtigkjøp"} - {transaction.type}: {transaction.beverages}{" "}
-                  {transaction.beverage_type} ({formatAmount(transaction.amount)} kr)
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Transaksjoner</h2>
+              <button 
+                onClick={() => setShowTransactions(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="py-2 px-4 text-left">Dato</th>
+                    <th className="py-2 px-4 text-left">Navn</th>
+                    <th className="py-2 px-4 text-left">Antall</th>
+                    <th className="py-2 px-4 text-left">Beløp</th>
+                    <th className="py-2 px-4 text-left">Type</th>
+                    <th className="py-2 px-4 text-left">Drikketype</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((transaction) => (
+                    <tr key={transaction.id} className="border-b hover:bg-gray-50">
+                      <td className="py-2 px-4">{formatDate(transaction.date)}</td>
+                      <td className="py-2 px-4">{transaction.name || "Hurtigkjøp"}</td>
+                      <td className="py-2 px-4">{transaction.beverages}</td>
+                      <td className="py-2 px-4">{formatAmount(transaction.amount)} kr</td>
+                      <td className="py-2 px-4 capitalize">{transaction.type}</td>
+                      <td className="py-2 px-4">{transaction.beverage_type}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
       {showPaymentDialog && (
