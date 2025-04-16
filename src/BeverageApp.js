@@ -434,7 +434,7 @@ const BeverageApp = () => {
         </button>
 
         <button
-          onClick="window.location.href='https://brusliste.vercel.app/stats'"
+          onClick="window.location.replace('https://brusliste.vercel.app/stats')"
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
         >
           <BarChart2 className="inline-block mr-1" /> Dashboard
