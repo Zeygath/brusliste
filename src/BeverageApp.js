@@ -609,6 +609,7 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Farris Bris"> Farris Bris</option>
             </select>
             <img href="https://cdn.discordapp.com/attachments/857730528840515605/1288639316364628040/IMG_0908.png?ex=67dbf822&is=67daa6a2&hm=fe3e1d08baa7c1abd58423cc7775ddc367353b52477a75a3a8a3fa9324d77e19&"></img>            
             <div className="flex justify-end">
