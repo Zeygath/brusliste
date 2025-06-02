@@ -637,6 +637,7 @@ const BeverageApp = () => {
             >
               <option value="Cola">Cola</option>
               <option value="Cola Zero">Cola Zero</option>
+              <option value="Farris Bris"> Farris Bris</option>
             </select>
             <div className="flex justify-end">
               <button onClick={closeBeverageDialog} className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
